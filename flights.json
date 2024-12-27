@@ -1,0 +1,1577 @@
+{
+    "traceId": "8f175f5d-e3c7-48f4-bc13-48dd48f4d7e5",
+    "flights": [
+        {
+            "airline": "AI",
+            "adtNum": 2,
+            "chdNum": 1,
+            "infNum": 0,
+            "isFareChange": false,
+            "clientId": 0,
+            "segGroups": [
+                {
+                    "origin": "IXU",
+                    "destination": "BOM",
+                    "departureOn": "2024-08-30T21:50:00",
+                    "segs": [
+                        {
+                            "isReturn": false,
+                            "origin": "IXU",
+                            "destination": "DEL",
+                            "departureOn": "2024-08-30T21:50:00",
+                            "arrivalOn": "2024-08-30T23:30:00",
+                            "duration": 100,
+                            "flightNum": "456",
+                            "eqpType": "32N",
+                            "mrkAirline": "AI",
+                            "arrTerminal": "3",
+                            "opAirline": "AI"
+                        },
+                        {
+                            "isReturn": false,
+                            "origin": "DEL",
+                            "destination": "BOM",
+                            "departureOn": "2024-08-31T02:15:00",
+                            "arrivalOn": "2024-08-31T04:30:00",
+                            "duration": 135,
+                            "flightNum": "860",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "depTerminal": "3",
+                            "arrTerminal": "2",
+                            "opAirline": "AI"
+                        }
+                    ]
+                }
+            ],
+            "currency": "USD",
+            "fareGroups": [
+                {
+                    "purchaseId": "638573832545748457",
+                    "refundable": false,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Economy",
+                    "pricedDescription": [],
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 99.00,
+                            "taxes": [
+                                {
+                                    "amt": 4.00,
+                                    "code": "YR"
+                                },
+                                {
+                                    "amt": 16.80,
+                                    "code": "TaxCategoryNotAvail"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 90.00,
+                            "taxes": [
+                                {
+                                    "amt": 4.00,
+                                    "code": "YR"
+                                },
+                                {
+                                    "amt": 16.30,
+                                    "code": "TaxCategoryNotAvail"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "S",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "T",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                }
+            ],
+            "content": "GDS",
+            "vendor": "1A",
+            "passThrough": false,
+            "isHold": false
+        },
+        {
+            "airline": "AI",
+            "adtNum": 2,
+            "chdNum": 1,
+            "infNum": 0,
+            "isFareChange": false,
+            "clientId": 0,
+            "segGroups": [
+                {
+                    "origin": "IXU",
+                    "destination": "BOM",
+                    "departureOn": "2024-08-30T08:05:00",
+                    "segs": [
+                        {
+                            "isReturn": false,
+                            "origin": "IXU",
+                            "destination": "DEL",
+                            "departureOn": "2024-08-30T08:05:00",
+                            "arrivalOn": "2024-08-30T09:45:00",
+                            "duration": 100,
+                            "flightNum": "444",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "arrTerminal": "3",
+                            "opAirline": "AI"
+                        },
+                        {
+                            "isReturn": false,
+                            "origin": "DEL",
+                            "destination": "BOM",
+                            "departureOn": "2024-08-30T22:30:00",
+                            "arrivalOn": "2024-08-31T00:45:00",
+                            "duration": 135,
+                            "flightNum": "814",
+                            "eqpType": "32N",
+                            "mrkAirline": "AI",
+                            "depTerminal": "3",
+                            "arrTerminal": "2",
+                            "opAirline": "AI"
+                        }
+                    ]
+                }
+            ],
+            "currency": "USD",
+            "fareGroups": [
+                {
+                    "purchaseId": "638573832545748879",
+                    "refundable": false,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Economy",
+                    "pricedDescription": [],
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 99.00,
+                            "taxes": [
+                                {
+                                    "amt": 4.00,
+                                    "code": "YR"
+                                },
+                                {
+                                    "amt": 16.80,
+                                    "code": "TaxCategoryNotAvail"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 90.00,
+                            "taxes": [
+                                {
+                                    "amt": 4.00,
+                                    "code": "YR"
+                                },
+                                {
+                                    "amt": 16.30,
+                                    "code": "TaxCategoryNotAvail"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "S",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "T",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                }
+            ],
+            "content": "GDS",
+            "vendor": "1A",
+            "passThrough": false,
+            "isHold": false
+        },
+        {
+            "airline": "AI",
+            "adtNum": 2,
+            "chdNum": 1,
+            "infNum": 0,
+            "isFareChange": false,
+            "clientId": 0,
+            "segGroups": [
+                {
+                    "origin": "IXU",
+                    "destination": "BOM",
+                    "departureOn": "2024-08-30T08:05:00",
+                    "segs": [
+                        {
+                            "isReturn": false,
+                            "origin": "IXU",
+                            "destination": "DEL",
+                            "departureOn": "2024-08-30T08:05:00",
+                            "arrivalOn": "2024-08-30T09:45:00",
+                            "duration": 100,
+                            "flightNum": "444",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "arrTerminal": "3",
+                            "opAirline": "AI"
+                        },
+                        {
+                            "isReturn": false,
+                            "origin": "DEL",
+                            "destination": "BOM",
+                            "departureOn": "2024-08-31T02:15:00",
+                            "arrivalOn": "2024-08-31T04:30:00",
+                            "duration": 135,
+                            "flightNum": "860",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "depTerminal": "3",
+                            "arrTerminal": "2",
+                            "opAirline": "AI"
+                        }
+                    ]
+                }
+            ],
+            "currency": "USD",
+            "fareGroups": [
+                {
+                    "purchaseId": "638573832545748942",
+                    "refundable": false,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Economy",
+                    "pricedDescription": [],
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 99.00,
+                            "taxes": [
+                                {
+                                    "amt": 4.00,
+                                    "code": "YR"
+                                },
+                                {
+                                    "amt": 16.80,
+                                    "code": "TaxCategoryNotAvail"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 90.00,
+                            "taxes": [
+                                {
+                                    "amt": 4.00,
+                                    "code": "YR"
+                                },
+                                {
+                                    "amt": 16.30,
+                                    "code": "TaxCategoryNotAvail"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "S",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "T",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                }
+            ],
+            "content": "GDS",
+            "vendor": "1A",
+            "passThrough": false,
+            "isHold": false
+        },
+        {
+            "airline": "AI",
+            "adtNum": 2,
+            "chdNum": 1,
+            "infNum": 0,
+            "isFareChange": false,
+            "clientId": 0,
+            "segGroups": [
+                {
+                    "origin": "IXU",
+                    "destination": "BOM",
+                    "departureOn": "2024-08-30T21:50:00",
+                    "segs": [
+                        {
+                            "isReturn": false,
+                            "origin": "IXU",
+                            "destination": "DEL",
+                            "departureOn": "2024-08-30T21:50:00",
+                            "arrivalOn": "2024-08-30T23:30:00",
+                            "duration": 100,
+                            "flightNum": "456",
+                            "eqpType": "32N",
+                            "mrkAirline": "AI",
+                            "arrTerminal": "3",
+                            "opAirline": "AI"
+                        },
+                        {
+                            "isReturn": false,
+                            "origin": "DEL",
+                            "destination": "BOM",
+                            "departureOn": "2024-08-31T02:15:00",
+                            "arrivalOn": "2024-08-31T04:30:00",
+                            "duration": 135,
+                            "flightNum": "860",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "depTerminal": "3",
+                            "arrTerminal": "2",
+                            "opAirline": "AI"
+                        }
+                    ]
+                }
+            ],
+            "currency": "USD",
+            "fareGroups": [
+                {
+                    "purchaseId": "638573832541836406",
+                    "refundable": true,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Comfort",
+                    "pricedDescription": [],
+                    "priceRemarks": "Included in your Comfort fare:\n\n•  Check in 15kg baggage allowance\n•  Carry on one bag max 7kg. \n•  Choice of continental or Indian cuisine non veg or veg. \n•  Spacious seats with a pitch of 33 inches. \n•  Earn miles when you fly.\n\nDisclaimer:\n\n1. Refer to fare rules for specific booking terms and conditions.\n2. Please note that if the flight is operated by another airline then the onboard product or service maybe different to that described above\n3. Ticketed Baggage Allowance takes precedence over Branded fares baggage allowance, and is always honored in AI Check-in counters",
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 99.06,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.16,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 90.36,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 4.72,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        }
+                    ],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "S",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "T",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                },
+                {
+                    "purchaseId": "638573832541837524",
+                    "refundable": true,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Comfort Plus",
+                    "pricedDescription": [],
+                    "priceRemarks": "Included in your Comfort Plus fare:\n\n•  Check in 15kg baggage allowance\n•  Carry on one bag max 7kg\n•  Choice of continental or Indian cuisine non veg or veg\n•  Spacious seats with a pitch of 33 inches \n•  No Rebooking charges if done 72 Hrs. prior departure \n•  Lower cancellation fee if cancelled 72 Hrs. prior departure \n•  Earn miles when you fly.\n\nDisclaimer:\n\n1. Refer to fare rules for specific booking terms and conditions.\n2. Please note that if the flight is operated by another airline then the onboard product or service maybe different to that described above\n3. Ticketed Baggage Allowance takes precedence over Branded fares baggage allowance, and is always honored in AI Check-in counters",
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 111.04,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.76,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 101.24,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.27,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        }
+                    ],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "G",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "G",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                }
+            ],
+            "content": "GDS",
+            "vendor": "1G",
+            "passThrough": false,
+            "isHold": false
+        },
+        {
+            "airline": "AI",
+            "adtNum": 2,
+            "chdNum": 1,
+            "infNum": 0,
+            "isFareChange": false,
+            "clientId": 0,
+            "segGroups": [
+                {
+                    "origin": "IXU",
+                    "destination": "BOM",
+                    "departureOn": "2024-08-30T08:05:00",
+                    "segs": [
+                        {
+                            "isReturn": false,
+                            "origin": "IXU",
+                            "destination": "DEL",
+                            "departureOn": "2024-08-30T08:05:00",
+                            "arrivalOn": "2024-08-30T09:45:00",
+                            "duration": 100,
+                            "flightNum": "444",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "arrTerminal": "3",
+                            "opAirline": "AI"
+                        },
+                        {
+                            "isReturn": false,
+                            "origin": "DEL",
+                            "destination": "BOM",
+                            "departureOn": "2024-08-30T22:30:00",
+                            "arrivalOn": "2024-08-31T00:45:00",
+                            "duration": 135,
+                            "flightNum": "814",
+                            "eqpType": "32N",
+                            "mrkAirline": "AI",
+                            "depTerminal": "3",
+                            "arrTerminal": "2",
+                            "opAirline": "AI"
+                        }
+                    ]
+                }
+            ],
+            "currency": "USD",
+            "fareGroups": [
+                {
+                    "purchaseId": "638573832541837811",
+                    "refundable": true,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Comfort",
+                    "pricedDescription": [],
+                    "priceRemarks": "Included in your Comfort fare:\n\n•  Check in 15kg baggage allowance\n•  Carry on one bag max 7kg. \n•  Choice of continental or Indian cuisine non veg or veg. \n•  Spacious seats with a pitch of 33 inches. \n•  Earn miles when you fly.\n\nDisclaimer:\n\n1. Refer to fare rules for specific booking terms and conditions.\n2. Please note that if the flight is operated by another airline then the onboard product or service maybe different to that described above\n3. Ticketed Baggage Allowance takes precedence over Branded fares baggage allowance, and is always honored in AI Check-in counters",
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 99.06,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.16,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 90.36,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 4.72,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        }
+                    ],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "S",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "T",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                },
+                {
+                    "purchaseId": "638573832541837908",
+                    "refundable": true,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Comfort Plus",
+                    "pricedDescription": [],
+                    "priceRemarks": "Included in your Comfort Plus fare:\n\n•  Check in 15kg baggage allowance\n•  Carry on one bag max 7kg\n•  Choice of continental or Indian cuisine non veg or veg\n•  Spacious seats with a pitch of 33 inches \n•  No Rebooking charges if done 72 Hrs. prior departure \n•  Lower cancellation fee if cancelled 72 Hrs. prior departure \n•  Earn miles when you fly.\n\nDisclaimer:\n\n1. Refer to fare rules for specific booking terms and conditions.\n2. Please note that if the flight is operated by another airline then the onboard product or service maybe different to that described above\n3. Ticketed Baggage Allowance takes precedence over Branded fares baggage allowance, and is always honored in AI Check-in counters",
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 111.04,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.76,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 101.24,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.27,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        }
+                    ],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "G",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "G",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                }
+            ],
+            "content": "GDS",
+            "vendor": "1G",
+            "passThrough": false,
+            "isHold": false
+        },
+        {
+            "airline": "AI",
+            "adtNum": 2,
+            "chdNum": 1,
+            "infNum": 0,
+            "isFareChange": false,
+            "clientId": 0,
+            "segGroups": [
+                {
+                    "origin": "IXU",
+                    "destination": "BOM",
+                    "departureOn": "2024-08-30T08:05:00",
+                    "segs": [
+                        {
+                            "isReturn": false,
+                            "origin": "IXU",
+                            "destination": "DEL",
+                            "departureOn": "2024-08-30T08:05:00",
+                            "arrivalOn": "2024-08-30T09:45:00",
+                            "duration": 100,
+                            "flightNum": "444",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "arrTerminal": "3",
+                            "opAirline": "AI"
+                        },
+                        {
+                            "isReturn": false,
+                            "origin": "DEL",
+                            "destination": "BOM",
+                            "departureOn": "2024-08-31T02:15:00",
+                            "arrivalOn": "2024-08-31T04:30:00",
+                            "duration": 135,
+                            "flightNum": "860",
+                            "eqpType": "32A",
+                            "mrkAirline": "AI",
+                            "depTerminal": "3",
+                            "arrTerminal": "2",
+                            "opAirline": "AI"
+                        }
+                    ]
+                }
+            ],
+            "currency": "USD",
+            "fareGroups": [
+                {
+                    "purchaseId": "638573832541838096",
+                    "refundable": true,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Comfort",
+                    "pricedDescription": [],
+                    "priceRemarks": "Included in your Comfort fare:\n\n•  Check in 15kg baggage allowance\n•  Carry on one bag max 7kg. \n•  Choice of continental or Indian cuisine non veg or veg. \n•  Spacious seats with a pitch of 33 inches. \n•  Earn miles when you fly.\n\nDisclaimer:\n\n1. Refer to fare rules for specific booking terms and conditions.\n2. Please note that if the flight is operated by another airline then the onboard product or service maybe different to that described above\n3. Ticketed Baggage Allowance takes precedence over Branded fares baggage allowance, and is always honored in AI Check-in counters",
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 99.06,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.16,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 90.36,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 4.72,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 46.81,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        }
+                    ],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "S",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "T",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                },
+                {
+                    "purchaseId": "638573832541838210",
+                    "refundable": true,
+                    "totalAmount": 0,
+                    "fareType": "Publish",
+                    "priceClass": "Comfort Plus",
+                    "pricedDescription": [],
+                    "priceRemarks": "Included in your Comfort Plus fare:\n\n•  Check in 15kg baggage allowance\n•  Carry on one bag max 7kg\n•  Choice of continental or Indian cuisine non veg or veg\n•  Spacious seats with a pitch of 33 inches \n•  No Rebooking charges if done 72 Hrs. prior departure \n•  Lower cancellation fee if cancelled 72 Hrs. prior departure \n•  Earn miles when you fly.\n\nDisclaimer:\n\n1. Refer to fare rules for specific booking terms and conditions.\n2. Please note that if the flight is operated by another airline then the onboard product or service maybe different to that described above\n3. Ticketed Baggage Allowance takes precedence over Branded fares baggage allowance, and is always honored in AI Check-in counters",
+                    "fares": [
+                        {
+                            "paxType": "ADT",
+                            "base": 111.04,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.76,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        },
+                        {
+                            "paxType": "CHD",
+                            "base": 101.24,
+                            "taxes": [
+                                {
+                                    "amt": 8.83,
+                                    "code": "IN"
+                                },
+                                {
+                                    "amt": 5.27,
+                                    "code": "K3"
+                                },
+                                {
+                                    "amt": 2.82,
+                                    "code": "P2"
+                                },
+                                {
+                                    "amt": 4.07,
+                                    "code": "YR"
+                                }
+                            ]
+                        }
+                    ],
+                    "grossFare": 0,
+                    "clientMarkup": 0,
+                    "netFare": 0,
+                    "baggages": [
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "ADT",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "IXUDEL"
+                        },
+                        {
+                            "airline": "AI",
+                            "paxType": "CHD",
+                            "checkInBag": "15KG",
+                            "cabinBag": "Nil",
+                            "cityPair": "DELBOM"
+                        }
+                    ],
+                    "miniRules": [
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "ADT",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": false,
+                            "cancelAllowed": true,
+                            "canAmt": 41.37,
+                            "exgAmt": 0,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "Before"
+                        },
+                        {
+                            "changeAllowed": true,
+                            "cancelAllowed": false,
+                            "canAmt": 0,
+                            "exgAmt": 34.84,
+                            "paxType": "CHD",
+                            "apply": "After"
+                        }
+                    ],
+                    "segInfos": [
+                        {
+                            "cityPair": "IXUDEL",
+                            "rbd": "G",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        },
+                        {
+                            "cityPair": "DELBOM",
+                            "rbd": "G",
+                            "cabinClass": "Economy",
+                            "seatRemaining": 9
+                        }
+                    ]
+                }
+            ],
+            "content": "GDS",
+            "vendor": "1G",
+            "passThrough": false,
+            "isHold": false
+        }
+    ]
+}

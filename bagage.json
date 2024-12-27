@@ -1,0 +1,177 @@
+{
+    "response": {
+      "traceId": "9185c241-e62a-4f87-a5cf-8efbb6b8c30a",
+      "flights": [
+        {
+          "airline": "AF",
+          "adtNum": 1,
+          "chdNum": 0,
+          "infNum": 0,
+          "isFareChange": false,
+          "clientId": 0,
+          "segGroups": [
+            {
+              "origin": "BUR",
+              "destination": "EWR",
+              "departureOn": "2024-07-31T17:14:00",
+              "segs": [
+                {
+                  "isReturn": false,
+                  "origin": "BUR",
+                  "destination": "SLC",
+                  "departureOn": "2024-07-31T17:14:00",
+                  "arrivalOn": "2024-07-31T20:06:00",
+                  "duration": 112,
+                  "flightNum": "3693",
+                  "eqpType": "E7W",
+                  "mrkAirline": "DL",
+                  "opAirline": "DL"
+                },
+                {
+                  "isReturn": false,
+                  "origin": "SLC",
+                  "destination": "EWR",
+                  "departureOn": "2024-07-31T23:20:00",
+                  "arrivalOn": "2024-08-01T05:48:00",
+                  "duration": 268,
+                  "flightNum": "2038",
+                  "eqpType": "32Q",
+                  "mrkAirline": "DL",
+                  "arrTerminal": "A",
+                  "opAirline": "DL"
+                }
+              ]
+            }
+          ],
+          "currency": "USD",
+          "fareGroups": [
+            {
+              "purchaseId": "638563461385515875",
+              "refundable": false,
+              "totalAmount": 0,
+              "fareType": "Publish",
+              "priceClass": "MAIN CABIN",
+              "pricedDescription": [],
+              "priceRemarks": "SETTING THE STANDARD FOR SAFER TRAVEL Our new Delta CareStandard(sm) focuses on clean surfaces, more space, safer service and personal care More Control with Main Cabin • Changes allowed with no change fees • Select and change seats at any time • Receive eCredit upon Cancellation • Eligible for paid upgrades • Please note that if the flight is operated by another airline then the onboard product or service maybe different to that described above.",
+              "fares": [
+                {
+                  "paxType": "ADT",
+                  "base": 169.84,
+                  "taxes": [
+                    {
+                      "amt": 5.6,
+                      "code": "AY"
+                    },
+                    {
+                      "amt": 12.74,
+                      "code": "US"
+                    },
+                    {
+                      "amt": 9,
+                      "code": "XF"
+                    },
+                    {
+                      "amt": 10,
+                      "code": "ZP"
+                    }
+                  ]
+                }
+              ],
+              "grossFare": 0,
+              "clientMarkup": 0,
+              "netFare": 0,
+              "baggages": [
+                {
+                  "airline": "AF",
+                  "paxType": "ADT",
+                  "checkInBag": "0PC",
+                  "cabinBag": "Nil",
+                  "cityPair": "BURSLC"
+                },
+                {
+                  "airline": "AF",
+                  "paxType": "ADT",
+                  "checkInBag": "0PC",
+                  "cabinBag": "Nil",
+                  "cityPair": "SLCEWR"
+                }
+              ],
+              "miniRules": [
+                {
+                  "changeAllowed": false,
+                  "cancelAllowed": true,
+                  "canAmt": 0,
+                  "exgAmt": 0,
+                  "paxType": "ADT",
+                  "apply": "Before",
+                  "remarks": "Non-Refundable"
+                },
+                {
+                  "changeAllowed": false,
+                  "cancelAllowed": true,
+                  "canAmt": 0,
+                  "exgAmt": 0,
+                  "paxType": "ADT",
+                  "apply": "After",
+                  "remarks": "Non-Refundable"
+                },
+                {
+                  "changeAllowed": true,
+                  "cancelAllowed": false,
+                  "canAmt": 0,
+                  "exgAmt": 0,
+                  "paxType": "ADT",
+                  "apply": "Before",
+                  "remarks": "As per Airline Applicable"
+                },
+                {
+                  "changeAllowed": true,
+                  "cancelAllowed": false,
+                  "canAmt": 0,
+                  "exgAmt": 0,
+                  "paxType": "ADT",
+                  "apply": "After",
+                  "remarks": "As per Airline Applicable"
+                }
+              ],
+              "segInfos": [
+                {
+                  "cityPair": "BURSLC",
+                  "rbd": "X",
+                  "cabinClass": "Economy",
+                  "seatRemaining": 3
+                },
+                {
+                  "cityPair": "SLCEWR",
+                  "rbd": "X",
+                  "cabinClass": "Economy",
+                  "seatRemaining": 9
+                }
+              ]
+            }
+          ],
+          "content": "GDS",
+          "vendor": "1G",
+          "passThrough": false,
+          "isHold": false
+        }
+      ],
+      "passengerRequiredFields": [
+        {
+          "paxType": "ADT",
+          "email": true,
+          "dob": false,
+          "gender": false,
+          "areaCode": false,
+          "mobile": true,
+          "passportNumber": false,
+          "passengerNationality": false,
+          "passportDOI": false,
+          "passportDOE": false,
+          "passportIssuedCountry": false,
+          "address_CountryCode": false
+        }
+      ]
+    }
+  }
+  

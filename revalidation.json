@@ -1,0 +1,153 @@
+{
+  "response": {
+    "traceId": "5d3fbde7-5168-406e-93d6-8ba60563017a",
+    "flights": [
+      {
+        "airline": "MU",
+        "adtNum": 1,
+        "chdNum": 0,
+        "infNum": 0,
+        "isFareChange": "",
+        "clientId": 0,
+        "segGroups": [
+          {
+            "origin": "PVG",
+            "destination": "LAX",
+            "departureOn": "2024-07-18T13:05:00",
+            "segs": [
+              {
+                "isReturn": "",
+                "origin": "PVG",
+                "destination": "LAX",
+                "departureOn": "2024-07-18T13:05:00",
+                "arrivalOn": "2024-07-18T10:05:00",
+                "duration": 720,
+                "flightNum": 583,
+                "eqpType": "77W",
+                "mrkAirline": "MU",
+                "depTerminal": "1",
+                "arrTerminal": "B",
+                "opAirline": "MU"
+              }
+            ]
+          }
+        ],
+        "currency": "USD",
+        "fareGroups": [
+          {
+            "refundable": "",
+            "totalAmount": 0,
+            "fareType": "Publish",
+            "priceClass": "Economy",
+            "pricedDescription": [],
+            "fares": [
+              {
+                "paxType": "ADT",
+                "base": 731.7,
+                "taxes": [
+                  {
+                    "amt": 0,
+                    "code": "K3"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "PHF"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "PSF"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "RCF"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "RCS"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "ST"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "UD"
+                  },
+                  {
+                    "amt": 183.44,
+                    "code": "YQ"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "YR"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "API"
+                  },
+                  {
+                    "amt": 0,
+                    "code": "CUTE"
+                  },
+                  {
+                    "amt": 12.43,
+                    "code": "CN"
+                  },
+                  {
+                    "amt": 22.26,
+                    "code": "US2"
+                  },
+                  {
+                    "amt": 3.84,
+                    "code": "XA"
+                  },
+                  {
+                    "amt": 7.02,
+                    "code": "XY2"
+                  },
+                  {
+                    "amt": 7,
+                    "code": "YC"
+                  }
+                ]
+              }
+            ],
+            "grossFare": 0,
+            "clientMarkup": 0,
+            "netFare": 0,
+            "baggages": [],
+            "miniRules": [],
+            "segInfos": [
+              {
+                "cityPair": "PVGLAX",
+                "rbd": "R",
+                "cabinClass": "Economy",
+                "seatRemaining": 9
+              }
+            ]
+          }
+        ],
+        "content": "GDS",
+        "vendor": "BI",
+        "passThrough": "",
+        "isHold": ""
+      }
+    ],
+    "passengerRequiredFields": [
+      {
+        "paxType": "ADT",
+        "email": 1,
+        "dob": "",
+        "gender": "",
+        "areaCode": "",
+        "mobile": 1,
+        "passportNumber": 1,
+        "passengerNationality": 1,
+        "passportDOI": "",
+        "passportDOE": 1,
+        "passportIssuedCountry": 1,
+        "address_CountryCode": ""
+      }
+    ]
+  }
+}

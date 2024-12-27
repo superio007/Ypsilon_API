@@ -1,0 +1,254 @@
+{
+    "orderRefId": "GFS65154",
+    "traceId": "e213110f-ea99-4348-bc91-944e32d3a06e",
+    "createdOn": "2024-07-15T07:55:19",
+    "bookingSource": "API",
+    "clientName": "Gaura Travel",
+    "clientEmail": "ashwinis@gauratravel.com.au",
+    "clientContactNo": "8097972852",
+    "id": 22327,
+    "flights": [
+        {
+            "purchaseId": "638566265456112876",
+            "pnr": "TESTA20240715155521169",
+            "validatingAirline": "6E",
+            "adultCount": 1,
+            "childCount": 0,
+            "infantCount": 0,
+            "currency": "USD",
+            "tktTimeLimitInfo": "",
+            "currentStatus": "Ticketing_In_Process",
+            "refundable": true,
+            "fareType": "Publish",
+            "gst": {
+                "address1": "",
+                "address2": "",
+                "city": "",
+                "state": "",
+                "pinCode": "",
+                "email": "",
+                "gstNumber": "",
+                "gstPhoneNo": "",
+                "gstCompanyName": ""
+            },
+            "segGroups": [
+                {
+                    "id": 11657,
+                    "origin": "BOM",
+                    "destination": "DXB",
+                    "departureOn": "2024-07-18T08:10:00",
+                    "segments": [
+                        {
+                            "isReturn": false,
+                            "origin": "BOM",
+                            "destination": "DXB",
+                            "departureOn": "2024-07-18T08:10:00",
+                            "arrivalOn": "2024-07-18T09:40:00",
+                            "duration": 180,
+                            "flightNum": "6E1451",
+                            "eqpType": "320",
+                            "mrkAirline": "6E",
+                            "depTerminal": "2",
+                            "arrTerminal": "1",
+                            "opAirline": "",
+                            "rbd": "R",
+                            "cabinClass": "Economy",
+                            "flightTicketStatus": "None",
+                            "stopOverSegments": []
+                        }
+                    ]
+                }
+            ],
+            "flightFares": [
+                {
+                    "paxType": "ADT",
+                    "baseFare": 50.87,
+                    "taxes": [
+                        {
+                            "amt": 44.43,
+                            "code": "Tax"
+                        }
+                    ],
+                    "serviceFee": 0.0
+                }
+            ],
+            "grossFare": 0.0,
+            "netfare": 0.0,
+            "clientMarkup": 0.0,
+            "baggages": [
+                {
+                    "paxType": "ADT",
+                    "checkInBag": "30KG , size:L+W+H<=158cm",
+                    "cabinBag": "7KG , size:55*35*25cm",
+                    "cityPair": "BOMDXB",
+                    "amount": 0.00,
+                    "isPaidBaggage": false
+                }
+            ],
+            "meals": [],
+            "seats": [],
+            "miniRules": [
+                {
+                    "changeAllowed": false,
+                    "cancelAllowed": true,
+                    "canAmt": 60.00,
+                    "exgAmt": 0.00,
+                    "paxType": "ADT",
+                    "apply": "Before"
+                },
+                {
+                    "changeAllowed": false,
+                    "cancelAllowed": true,
+                    "canAmt": 66.00,
+                    "exgAmt": 0.00,
+                    "paxType": "ADT",
+                    "apply": "Before"
+                },
+                {
+                    "changeAllowed": true,
+                    "cancelAllowed": false,
+                    "canAmt": 0.00,
+                    "exgAmt": 45.00,
+                    "paxType": "ADT",
+                    "apply": "Before"
+                },
+                {
+                    "changeAllowed": true,
+                    "cancelAllowed": false,
+                    "canAmt": 0.00,
+                    "exgAmt": 51.00,
+                    "paxType": "ADT",
+                    "apply": "Before"
+                }
+            ],
+            "passengers": [
+                {
+                    "id": 14604,
+                    "title": "Mr",
+                    "firstName": "Kiran",
+                    "lastName": "dhoke",
+                    "email": "dhokekiran88@gmail.com",
+                    "dob": "1999-03-11T15:43:16",
+                    "genderType": "M",
+                    "areaCode": "",
+                    "ffNumber": "",
+                    "paxType": "ADT",
+                    "mobile": "8097972852",
+                    "passportNumber": "4664646",
+                    "passengerNationality": "IN",
+                    "passportDOI": "2010-03-15T15:43:16",
+                    "passportDOE": "2040-04-15T15:43:16",
+                    "passportIssuedCountry": "IN",
+                    "seatPref": "N",
+                    "mealPref": "",
+                    "ktn": "",
+                    "redressNo": "",
+                    "flightTicketStatus": "None",
+                    "vendorFee": 0.0,
+                    "onwardFares": 0.0,
+                    "supplierCancellationCharge": 0.0,
+                    "supplierServiceFee": 0.0,
+                    "supplierSTF": 0.0,
+                    "supplierRAF": 0.0,
+                    "supplierGFServiceFee": 0.0,
+                    "supplierNetRefund": 0.0,
+                    "clientTicketAmount": 0.0,
+                    "clientCancellationCharge": 0.0,
+                    "clientGFServiceFee": 0.0,
+                    "clientNetRefund": 0.0
+                }
+            ],
+            "address": {
+                "addressName": "shastri nagar",
+                "street": "vaman bhaskar koli chawl r",
+                "state": "Maharashtra",
+                "postalCode": "400606",
+                "countryName": "IN",
+                "countryCode": "India",
+                "city": "Thane"
+            },
+            "pcc": "AT-Test",
+            "commissionDetails": {
+                "bookingFee": 0.00,
+                "vendorFee": 0.00,
+                "iata": 0.00,
+                "isIATATypePercentage": false,
+                "plb": 0.00,
+                "isPLBTypePercentage": false,
+                "markup": 0.00,
+                "disableInfantMarkup": false,
+                "taxType": "TaxCategoryNotAvail",
+                "vendorTaxType": "TaxCategoryNotAvail",
+                "taxIATA": 0.00,
+                "isTaxIATATypePercentage": false,
+                "taxPLB": 0.00,
+                "isTaxPLBTypePercentage": false,
+                "vendorIATA": 0.00,
+                "isVendorIATATypePercentage": false,
+                "vendorPLB": 0.00,
+                "isVendorPLBTypePercentage": false,
+                "vendorTaxIATA": 0.00,
+                "isVendorTaxIATATypePercentage": false,
+                "vendorTaxPLB": 0.00,
+                "isVendorTaxPLBTypePercentage": false,
+                "dropNet": 0.00,
+                "vendorDropNet": 0.00,
+                "bookingFeeApplicable": "Include",
+                "vendorServiceTax": 0.00,
+                "vendorServiceTaxName": "AIT",
+                "vendorServiceTaxType": "Percentage",
+                "vendorServiceTaxApplicable": "Base",
+                "isTDSApplicable": false,
+                "tdsPercentage": 0.00,
+                "supplierROE": 0.0,
+                "clientROE": 0.0,
+                "markUpROE": 0.0,
+                "pgCharge": 0.00,
+                "mco": 0.00,
+                "mcoParted": 0.00,
+                "additionalMarkup": 0.00,
+                "passThroughMarkup": 0.00
+            },
+            "fop": "Credit Card",
+            "isCorporate": false,
+            "cardInfoId": 41,
+            "flightBookingStatusFlows": [
+                {
+                    "actionBy": "clientid.gauratravels",
+                    "status": "Booking_In_Process",
+                    "actionedOn": "2024-07-15T07:55:19",
+                    "remarks": "Order Initiated",
+                    "remarksId": 1
+                },
+                {
+                    "actionBy": "clientid.gauratravels",
+                    "status": "Booking_In_Process",
+                    "actionedOn": "2024-07-15T07:55:19",
+                    "remarks": "Supplier Service initiated",
+                    "remarksId": 2
+                },
+                {
+                    "actionBy": "clientid.gauratravels",
+                    "status": "Ticketing_In_Process",
+                    "actionedOn": "2024-07-15T07:55:23",
+                    "remarks": "Ticketing Process Initiated",
+                    "remarksId": 6
+                },
+                {
+                    "actionBy": "clientid.gauratravels",
+                    "status": "Booked",
+                    "actionedOn": "2024-07-15T07:55:23",
+                    "remarks": "Booking Created",
+                    "remarksId": 4
+                },
+                {
+                    "actionBy": "clientid.gauratravels",
+                    "status": "Booking_In_Process",
+                    "actionedOn": "2024-07-15T07:55:23",
+                    "remarks": "Supplier Service Completed",
+                    "remarksId": 3
+                }
+            ]
+        }
+    ]
+}
