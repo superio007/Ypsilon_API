@@ -3,6 +3,7 @@ session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,80 +14,77 @@ session_start();
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <style>
-        .custom-dropdown-menu {
-            min-width: 250px;
-            padding: 10px;
-        }
-        .custom-dropdown-menu .btn {
-            width: 30px;
-            padding: 0;
-            text-align: center;
-        }
-        .custom-dropdown-menu span {
-            font-weight: bold;
-        }
-        .custom-dropdown-menu .description {
-            font-size: 0.8em;
-            color: #555;
-        }
-        .flight-result {
+        .offer-card {
             border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            background-color: #fff;
+            position: relative;
         }
 
-        .price {
+        .offer-card .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #000;
+            color: #ffd207;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .offer-card .price {
             font-size: 24px;
             font-weight: bold;
         }
 
-        .flight-info {
-            font-size: 16px;
+        .offer-card .details {
+            font-size: 14px;
+            margin-top: 8px;
         }
 
-        .flight-info span {
-            display: block;
+        .offer-card .flight-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            font-size: 14px;
         }
 
-        .book-button {
-            background-color: #f0ad4e;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-        }
-
-        .book-button:hover {
-            background-color: #ec971f;
-            color: #fff;
-        }
-
-        .available-seats {
+        .offer-card .availability {
             color: green;
-            font-weight: bold;
+            margin-top: 8px;
         }
 
-        .price-breakdown {
+        .offer-card .price-breakdown {
             color: blue;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .offer-card .book-btn {
+            background-color: #ffd207;
+            border: none;
+            color: #000;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
         }
 
-        .table-responsive {
-            margin-bottom: 20px;
-        }
-
-        .price-breakdown-content{
-            display: none;
+        .offer-card .book-btn:hover {
+            background-color: #e5be07;
         }
     </style>
 </head>
+
 <body>
-<?php
+    <?php
     require 'api.php';
-    if(isset($_COOKIE['token'])){
+    if (isset($_COOKIE['token'])) {
         $token = $_COOKIE['token'];
-    }else{
+    } else {
         $token = getToken();
     }
     $token = getToken();
@@ -102,9 +100,9 @@ session_start();
         $childrenCount = $_POST['children'] ?? 0;
         $infantsCount = $_POST['infants'] ?? 0;
         $total = (int)$adultsCount + (int)$childrenCount + (int)$infantsCount;
-    
 
-    
+
+
         // Store the collected data in a session array
         $_SESSION['formData'] = [
             'tripType' => $tripType,
@@ -127,19 +125,19 @@ session_start();
             $url = 'https://sandboxapi.getfares.com/Flights/Revalidation/v1';
             $traceId = $_GET['traceId'];
             $purchaseId = $_GET['purchaseId'];
-    
+
             // Data to be sent in the body of the request
             $data = [
                 "traceId" => $traceId,
                 "purchaseIds" => [$purchaseId]
             ];
-    
+
             // Convert data array to JSON format
             $jsonData = json_encode($data);
-    
+
             // Initialize cURL session
             $ch = curl_init();
-    
+
             // Set the URL and other options for the cURL session
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -149,17 +147,17 @@ session_start();
                 'Content-Type: application/json',
                 "Authorization: Bearer $token"
             ]);
-    
+
             // Execute the cURL session and fetch the response
             $response = curl_exec($ch);
-    
+
             // Check for errors
             if ($response === false) {
                 echo 'cURL Error: ' . curl_error($ch);
             } else {
                 // Decode and print the response
                 $responseData = json_decode($response, true);
-    
+
                 // Check if the responseData has the 'flights' key and 'isFareChange' key within it
                 if (isset($responseData['flights'][0]['isFareChange']) && !$responseData['flights'][0]['isFareChange']) {
                     // Redirect to book.php with the required parameters
@@ -177,70 +175,78 @@ session_start();
                     exit();
                 }
             }
-    
+
             // Close the cURL session
             curl_close($ch);
         } else {
-            
         }
     }
-    
-    isset($_SESSION ['formData']);
-    if(isset($_POST['trip'])=="oneway"){
-        // API endpoint
-        $url = 'https://sandboxapi.getfares.com/Flights/Search/v1'; // Replace with your actual URL
-
-        // Data to be sent in the body of the request
-        $data = [
-            "originDestinations" => [
-                [
-                    "departureDateTime" => $departureDate."T09:10:27.482Z",
-                    "origin" => (string)$departFrom,
-                    "destination" => (string)$flyingTo
-                ]
-            ],
-            "adultCount" => $adultsCount,
-            "childCount" => $childrenCount,
-            "infantCount" => $infantsCount,
-            "cabinClass" => $travelClass,
-            "cabinPreferenceType" => "Preferred",
-            "stopOver" => "None",
-            "airTravelType" => $tripType,
-            "includeBaggage" => true,
-            "includeMiniRules" => true
-        ];
-
-        // Convert data array to JSON format
-        $jsonData = json_encode($data);
-
-        // Initialize cURL session
-        $ch = curl_init();
-
-        // Set the URL and other options for the cURL session
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            "Authorization: Bearer $token"
-        ]);
-
-        // Execute the cURL session and fetch the response
-        $response = curl_exec($ch);
-
-        // Check for errors
-        if ($response === false) {
-            echo 'cURL Error: ' . curl_error($ch); 
-        } else {
-            // Decode and print the response
-            $responseData = json_decode($response, true);
-            // print_r($responseData);
+    function getFareXRefById($responseData, $fareIdToMatch)
+    {
+        // Load XML from string
+        $xml = simplexml_load_string($responseData);
+        if ($xml === false) {
+            die("Failed to load XML: " . implode(", ", libxml_get_errors()));
         }
 
-        // Close the cURL session
-        curl_close($ch);
-    }elseif(isset($_POST['trip'])=="roundtrip"){
+        // Find the <fareXRef> matching the given fareId
+        $matchedFareXRef = null;
+        foreach ($xml->xpath("//fareXRef[@fareId='$fareIdToMatch']") as $fareXRef) {
+            // Convert the matched <fareXRef> element to an array
+            $matchedFareXRef = json_decode(json_encode($fareXRef), true);
+            break; // Stop after finding the first match
+        }
+
+        // Return the matched fareXRef array or null if not found
+        return $matchedFareXRef;
+    }
+    isset($_SESSION['formData']);
+    if (isset($_POST['trip']) == "oneway") {
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-02-12" dstApt="DEL" depApt="MEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
+            CURLOPT_HTTPHEADER => array(
+                'accept: application/xml',
+                'accept-encoding: gzip',
+                'api-version: 3.92',
+                'accessmode: agency',
+                'accessid: gaura gaura',
+                'authmode: pwd',
+                'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
+                'content-Length: 494',
+                'Connection: close',
+                'Content-Type: text/plain'
+            ),
+        ));
+        $responseData = curl_exec($curl);
+        $xml = simplexml_load_string($responseData);
+        // Register namespaces for elements with prefixes
+        $xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
+        $fareId = [];
+        foreach ($xml->fares->fare as $fare) {
+            $fareId[] = (string)$fare['fareId']; // Access fareId attribute
+            $fares[] = [
+                'fareId' => (string)$fare['fareId'],
+                'shared:fareType' => (string)$fare['fareType'],
+                'depApt' => (string)$fare['depApt'],
+                'dstApt' => (string)$fare['dstApt'],
+                'shared:vcr' => (string)$fare['vcr'],
+            ];
+        }
+        // var_dump($fareId);
+        var_dump($fares);
+
+        curl_close($curl);
+    } elseif (isset($_POST['trip']) == "roundtrip") {
         // API endpoint
         $url = 'https://sandboxapi.getfares.com/Flights/Search/v1'; // Replace with your actual URL
 
@@ -248,14 +254,14 @@ session_start();
         $data = [
             "originDestinations" => [
                 [
-                    "departureDateTime" => $departureDate."T09:10:27.482Z",
+                    "departureDateTime" => $departureDate . "T09:10:27.482Z",
                     "origin" => (string)$departFrom,
                     "destination" => (string)$flyingTo
                 ],
                 [
-                    "departureDateTime"=> $returnDate."10:27.482Z",
-                    "origin"=> (string)$flyingTo,
-                    "destination"=> (string)$departFrom
+                    "departureDateTime" => $returnDate . "10:27.482Z",
+                    "origin" => (string)$flyingTo,
+                    "destination" => (string)$departFrom
                 ]
             ],
             "adultCount" => $adultsCount,
@@ -402,325 +408,276 @@ session_start();
                             <button style="width: 80px;" class="btn btn-primary btn-block mt-2" id="passenger-ready" type="button">Ready</button>
                         </div>
                     </div>
-                        <input type="hidden" id="adultsInput" name="adults" value="1">
-                        <input type="hidden" id="childrenInput" name="children" value="0">
-                        <input type="hidden" id="infantsInput" name="infants" value="0">
+                    <input type="hidden" id="adultsInput" name="adults" value="1">
+                    <input type="hidden" id="childrenInput" name="children" value="0">
+                    <input type="hidden" id="infantsInput" name="infants" value="0">
                 </div>
                 <button type="submit" class="btn btn-dark"><i class="fas fa-search"></i> Search</button>
             </form>
         </div>
     </div>
-    <?php if (isset($responseData)): ?> 
-        <div class="container">    
-            <?php foreach ($responseData['flights'] as $index => $flight): ?>
-                <form action="" method="get" name="book" class="bookForm">
-                    <div class="my-5">
-                        <div class="flight-result" style="position: relative;">
-                            <div class="d-flex justify-content-between ">
-                                <div class="d-flex align-items-center" style="gap: 8px;">
-                                    <div class="price">
-                                        <?php
-                                        $baseFare = $flight['fareGroups'][0]['fares'][0]['base'];
-                                        $childFare = isset($flight['fareGroups'][0]['fares'][1]['base']);
-                                        echo "$" . number_format($baseFare, 2) ;
-                                        ?>
-                                        <input type="text" name="traceId" id="traceId" value="<?php echo  $responseData['traceId']?>" hidden>
-                                    </div>
-                                    <div>p.p.</div>
-                                </div>
-                                <div class="text-center" style="background-color:#000000; color:#ffab00; position: absolute;right: -11px;top: -15px;padding: 8px 2rem;border-radius:10px;">
-                                    <?php 
-                                    $totalAdultCheckInBag = 0;
-                                    $totalAdultCabinBag = 0;
-                                    $totalChildCheckInBag = 0;
-                                    $totalChildCabinBag = 0;
-
-                                    foreach($flight['fareGroups'] as $fareGroups) {
-                                        foreach($fareGroups['baggages'] as $baggage) {
-                                            $checkInBagWeight = (int)preg_replace('/[^0-9]/', '', explode(' ', $baggage['checkInBag'])[0]);
-                                            $cabinBagWeight = (int)preg_replace('/[^0-9]/', '', explode(' ', $baggage['cabinBag'])[0]);
-
-                                            if ($baggage['paxType'] == 'ADT') {
-                                                $totalAdultCheckInBag += $checkInBagWeight;
-                                                $totalAdultCabinBag += $cabinBagWeight;
-                                                continue;
-                                            } elseif ($baggage['paxType'] == 'CHD') {
-                                                $totalChildCheckInBag += $checkInBagWeight;
-                                                $totalChildCabinBag += $cabinBagWeight;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    $adults = [
-                                        'totalCheckInBag' => $totalAdultCheckInBag,
-                                        'totalCabinBag' => $totalAdultCabinBag
-                                    ];
-
-                                    $children = [
-                                        'totalCheckInBag' => $totalChildCheckInBag,
-                                        'totalCabinBag' => $totalChildCabinBag
-                                    ];
-
-                                    $totalWeight = $adults['totalCheckInBag'] + $adults['totalCabinBag'] + $children['totalCheckInBag'] + $children['totalCabinBag'];
-                                    ?>
-
-                                    <p class="m-0">Baggage includes!</p>
-                                    <p class="m-0"><?php echo $totalWeight . 'Kg.'; ?></p>
-                                </div>
-                                <div style="top: -22px;position: absolute;background-color: #818181;color: #ffffff;right: -176px;padding: 8px 14px;text-align: center;">
-                                    <p>Baggage includes!</p>
-                                    <p>Baggages!</p>
-                                </div>
-                            </div>
-                            <div class="flight-info mt-3">
-                                <span>
-                                    Adult price : <?php echo $flight['adtNum']; ?>× Adults –
-                                    <?php echo  "$ " . number_format($baseFare * $flight['adtNum'], 2) ;?>
-                                    <br>
-                                    <?php if($flight['chdNum']):?>
-                                    Child price : <?php echo $flight['chdNum']; ?>× Childs –
-                                        <?php echo  "$ " . number_format($childFare * $flight['chdNum'], 2) ;?>
-                                    <?php endif; ?>
-                                </span>
-                                <div class="mt-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>Outbound</strong> <?php echo $flight['fareGroups'][0]['fareType']; ?> fare (<?php echo $flight['fareGroups'][0]['priceClass']; ?>)
-                                        </div>
-                                        <div><?php echo $flight['airline']; ?></div>
-                                    </div>
-                                    <?php foreach ($flight['segGroups'] as $segGroup): ?>
-                                        <?php foreach ($segGroup['segs'] as $segment): ?>
-                                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                                <div>
-                                                    <i class="fas fa-plane"></i> <?php echo date("H:i d.m.Y", strtotime($segment['departureOn'])); ?> <?php echo $segment['origin']; ?>
-                                                </div>
-                                                <div>
-                                                    <i class="fas fa-clock"></i> <?php echo floor($segment['duration'] / 60); ?>h <?php echo $segment['duration'] % 60; ?>m
-                                                </div>
-                                                <div>
-                                                    <i class="fas fa-plane-arrival"></i> <?php echo date("H:i d.m.Y", strtotime($segment['arrivalOn'])); ?> <?php echo $segment['destination']; ?>
-                                                </div>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    <?php endforeach; ?>
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <div class="available-seats">
-                                            <?php
-                                            $minSeats = PHP_INT_MAX;
-                                            $seatInfoAvailable = false;
-
-                                            if (isset($flight['fareGroups']) && is_array($flight['fareGroups'])) {
-                                                foreach ($flight['fareGroups'] as $fareGroup) {
-                                                    if (isset($fareGroup['segInfos']) && is_array($fareGroup['segInfos'])) {
-                                                        foreach ($fareGroup['segInfos'] as $segInfo) {
-                                                            if (isset($segInfo['seatRemaining'])) {
-                                                                $minSeats = min($minSeats, $segInfo['seatRemaining']);
-                                                                $seatInfoAvailable = true;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            if ($seatInfoAvailable) {
-                                                echo "At least $minSeats seats available<br>";
-                                            } else {
-                                                echo "Seat information not available<br>";
-                                            }
-                                            ?>
-                                            <input type="text" name="purchaseId" id="purchaseId" value="<?php echo  $fareGroup['purchaseId']?>" hidden>
-                                        </div>
-                                        <button type="submit" class="btn book-button" >Book this offer</button>
-                                    </div>
-                                    <div class="mt-3">
-                                        <span class="price-breakdown" data-index="<?php echo $index; ?>">+ DISPLAY PRICE BREAKDOWN</span>
-                                    </div>
-                                    <div class="price-breakdown-content" id="price-breakdown-<?php echo $index; ?>">
-                                    <?php foreach($fareGroup['fares'] as $fare):?>
-                                            <p style="margin: 12px 0 6px 12px;">
-                                            <?php if($fare['paxType']=="ADT"){
-                                                    echo "Adult";
-                                            }elseif($fare['paxType']=="CHD"){
-                                                    echo "Child";
-                                            }else{
-                                                    echo "Infant";
-                                            }?> : <?php echo number_format($baseFare, 2)?></p>
-                                    <?php endforeach;?>
-                                </div>
-                            </div>
-                        </div>
+    <?php if (isset($responseData)): ?>
+        <?php $index = 1; foreach ($fares as $id): ?>
+            <?php 
+            $fareXRef = getFareXRefById($responseData, $id['fareId']); ?>
+            <div class="container">
+                <div class="offer-card">
+                    <div><?php echo $index; ?></div>
+                    <div class="d-flex justify-content-between">
+                        <div>FareType : <?php echo "PUB"; ?></div>
+                        <div>Departure : <?php echo $id['depApt']; ?></div>
+                        <div>Destination : <?php echo $id['dstApt']; ?></div>
+                        <div>Airline : <?php echo "Qatar Airways"; ?></div>
                     </div>
-                </form>
-            <?php endforeach; ?>
-        </div>
+                    <?php $value= 1; foreach ($fareXRef['flights']['flight'] as $flight): ?>
+                        <div class="p-2 card my-2"><?php echo $value; ?></div>
+                        <?php $value++; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php $index++; ?>
+        <?php endforeach; ?>
     <?php endif; ?>
-<script>
-    $(document).ready(function() {
-        // Cities array
-        var cities = [
-            { label: "Mumbai", value: "BOM" },
-            { label: "Delhi", value: "DEL" },
-            { label: "Dubai", value: "DXB" },
-            { label: "New York", value: "JFK" },
-            { label: "London", value: "LHR" },
-            { label: "Paris", value: "CDG" },
-            { label: "Tokyo", value: "HND" },
-            { label: "Singapore", value: "SIN" },
-            { label: "Sydney", value: "SYD" },
-            { label: "Hong Kong", value: "HKG" },
-            { label: "Los Angeles", value: "LAX" },
-            { label: "Chicago", value: "ORD" },
-            { label: "Toronto", value: "YYZ" },
-            { label: "San Francisco", value: "SFO" },
-            { label: "Boston", value: "BOS" },
-            { label: "Miami", value: "MIA" },
-            { label: "Bangkok", value: "BKK" },
-            { label: "Beijing", value: "PEK" },
-            { label: "Shanghai", value: "PVG" },
-            { label: "Seoul", value: "ICN" },
-            { label: "Istanbul", value: "IST" },
-            { label: "Frankfurt", value: "FRA" },
-            { label: "Amsterdam", value: "AMS" },
-            { label: "Zurich", value: "ZRH" },
-            { label: "Rome", value: "FCO" }
-        ];
+    <script>
+        $(document).ready(function() {
+            // Cities array
+            var cities = [{
+                    label: "Mumbai",
+                    value: "BOM"
+                },
+                {
+                    label: "Delhi",
+                    value: "DEL"
+                },
+                {
+                    label: "Dubai",
+                    value: "DXB"
+                },
+                {
+                    label: "New York",
+                    value: "JFK"
+                },
+                {
+                    label: "London",
+                    value: "LHR"
+                },
+                {
+                    label: "Paris",
+                    value: "CDG"
+                },
+                {
+                    label: "Tokyo",
+                    value: "HND"
+                },
+                {
+                    label: "Singapore",
+                    value: "SIN"
+                },
+                {
+                    label: "Sydney",
+                    value: "SYD"
+                },
+                {
+                    label: "Hong Kong",
+                    value: "HKG"
+                },
+                {
+                    label: "Los Angeles",
+                    value: "LAX"
+                },
+                {
+                    label: "Chicago",
+                    value: "ORD"
+                },
+                {
+                    label: "Toronto",
+                    value: "YYZ"
+                },
+                {
+                    label: "San Francisco",
+                    value: "SFO"
+                },
+                {
+                    label: "Boston",
+                    value: "BOS"
+                },
+                {
+                    label: "Miami",
+                    value: "MIA"
+                },
+                {
+                    label: "Bangkok",
+                    value: "BKK"
+                },
+                {
+                    label: "Beijing",
+                    value: "PEK"
+                },
+                {
+                    label: "Shanghai",
+                    value: "PVG"
+                },
+                {
+                    label: "Seoul",
+                    value: "ICN"
+                },
+                {
+                    label: "Istanbul",
+                    value: "IST"
+                },
+                {
+                    label: "Frankfurt",
+                    value: "FRA"
+                },
+                {
+                    label: "Amsterdam",
+                    value: "AMS"
+                },
+                {
+                    label: "Zurich",
+                    value: "ZRH"
+                },
+                {
+                    label: "Rome",
+                    value: "FCO"
+                }
+            ];
 
-        // Autocomplete for "Depart from"
-        $("#departFrom").autocomplete({
-            source: cities,
-            select: function(event, ui) {
-                $("#departFrom").val(ui.item.label);
-                $("#departFromCode").val(ui.item.value);
-                return false;
-            }
-        });
+            // Autocomplete for "Depart from"
+            $("#departFrom").autocomplete({
+                source: cities,
+                select: function(event, ui) {
+                    $("#departFrom").val(ui.item.label);
+                    $("#departFromCode").val(ui.item.value);
+                    return false;
+                }
+            });
 
-        // Autocomplete for "Flying to"
-        $("#flyingTo").autocomplete({
-            source: cities,
-            select: function(event, ui) {
-                $("#flyingTo").val(ui.item.label);
-                $("#flyingToCode").val(ui.item.value);
-                return false;
-            }
-        });
+            // Autocomplete for "Flying to"
+            $("#flyingTo").autocomplete({
+                source: cities,
+                select: function(event, ui) {
+                    $("#flyingTo").val(ui.item.label);
+                    $("#flyingToCode").val(ui.item.value);
+                    return false;
+                }
+            });
 
-        $('#passengerDropdown').click(function() {
-            $('.custom-dropdown-menu').toggle();
-        });
+            $('#passengerDropdown').click(function() {
+                $('.custom-dropdown-menu').toggle();
+            });
 
-        $('#adults-plus').click(function() {
-            let count = parseInt($('#adults-count').text());
-            $('#adults-count').text(count + 1);
-            $('#adultsInput').val(count + 1);
-            updatePassengerDropdown();
-        });
-
-        $('#adults-minus').click(function() {
-            let count = parseInt($('#adults-count').text());
-            if (count > 1) {
-                $('#adults-count').text(count - 1);
-                $('#adultsInput').val(count - 1);
+            $('#adults-plus').click(function() {
+                let count = parseInt($('#adults-count').text());
+                $('#adults-count').text(count + 1);
+                $('#adultsInput').val(count + 1);
                 updatePassengerDropdown();
-            }
-        });
+            });
 
-        $('#children-plus').click(function() {
-            let count = parseInt($('#children-count').text());
-            $('#children-count').text(count + 1);
-            $('#childrenInput').val(count + 1);
-            updatePassengerDropdown();
-        });
+            $('#adults-minus').click(function() {
+                let count = parseInt($('#adults-count').text());
+                if (count > 1) {
+                    $('#adults-count').text(count - 1);
+                    $('#adultsInput').val(count - 1);
+                    updatePassengerDropdown();
+                }
+            });
 
-        $('#children-minus').click(function() {
-            let count = parseInt($('#children-count').text());
-            if (count > 0) {
-                $('#children-count').text(count - 1);
-                $('#childrenInput').val(count - 1);
+            $('#children-plus').click(function() {
+                let count = parseInt($('#children-count').text());
+                $('#children-count').text(count + 1);
+                $('#childrenInput').val(count + 1);
                 updatePassengerDropdown();
-            }
-        });
+            });
 
-        $('#infants-plus').click(function() {
-            let count = parseInt($('#infants-count').text());
-            $('#infants-count').text(count + 1);
-            $('#infantsInput').val(count + 1);
-            updatePassengerDropdown();
-        });
+            $('#children-minus').click(function() {
+                let count = parseInt($('#children-count').text());
+                if (count > 0) {
+                    $('#children-count').text(count - 1);
+                    $('#childrenInput').val(count - 1);
+                    updatePassengerDropdown();
+                }
+            });
 
-        $('#infants-minus').click(function() {
-            let count = parseInt($('#infants-count').text());
-            if (count > 0) {
-                $('#infants-count').text(count - 1);
-                $('#infantsInput').val(count - 1);
+            $('#infants-plus').click(function() {
+                let count = parseInt($('#infants-count').text());
+                $('#infants-count').text(count + 1);
+                $('#infantsInput').val(count + 1);
                 updatePassengerDropdown();
-            }
-        });
+            });
 
-        $('#passenger-ready').click(function() {
-            $('.custom-dropdown-menu').hide();
-        });
+            $('#infants-minus').click(function() {
+                let count = parseInt($('#infants-count').text());
+                if (count > 0) {
+                    $('#infants-count').text(count - 1);
+                    $('#infantsInput').val(count - 1);
+                    updatePassengerDropdown();
+                }
+            });
 
-        function updatePassengerDropdown() {
-            let adults = parseInt($('#adults-count').text());
-            let children = parseInt($('#children-count').text());
-            let infants = parseInt($('#infants-count').text());
-            let totalPassengers = adults + children + infants;
-            $('#passengerDropdown').text(totalPassengers);
-        }
-
-        $(document).click(function(event) {
-            if (!$(event.target).closest('#passengerDropdown, .custom-dropdown-menu').length) {
+            $('#passenger-ready').click(function() {
                 $('.custom-dropdown-menu').hide();
-            }
-        });
+            });
 
-        // Handle the enabling/disabling of the return date field
-        $('input[name="trip"]').change(function() {
-            if ($('#oneWay').is(':checked')) {
+            function updatePassengerDropdown() {
+                let adults = parseInt($('#adults-count').text());
+                let children = parseInt($('#children-count').text());
+                let infants = parseInt($('#infants-count').text());
+                let totalPassengers = adults + children + infants;
+                $('#passengerDropdown').text(totalPassengers);
+            }
+
+            $(document).click(function(event) {
+                if (!$(event.target).closest('#passengerDropdown, .custom-dropdown-menu').length) {
+                    $('.custom-dropdown-menu').hide();
+                }
+            });
+
+            // Handle the enabling/disabling of the return date field
+            $('input[name="trip"]').change(function() {
+                if ($('#oneWay').is(':checked')) {
+                    $('#returnDate').prop('disabled', true);
+                } else if ($('#roundTrip').is(':checked')) {
+                    $('#returnDate').prop('disabled', false);
+                } else if ($('#multiCity').is(':checked')) {
+                    $('#returnDate').prop('disabled', true);
+                }
+            });
+
+            // Initialize the return date field based on the default selected trip type
+            if ($('#oneWay').is(':checked') || $('#multiCity').is(':checked')) {
                 $('#returnDate').prop('disabled', true);
             } else if ($('#roundTrip').is(':checked')) {
                 $('#returnDate').prop('disabled', false);
-            } else if ($('#multiCity').is(':checked')) {
-                $('#returnDate').prop('disabled', true);
             }
         });
+        $(document).ready(function() {
+            $(document).on('click', '.price-breakdown', function() {
+                var index = $(this).data('index');
+                var content = $('#price-breakdown-' + index);
+                if (content.css('display') === 'none' || content.css('display') === '') {
+                    content.css('display', 'block');
+                    $(this).text('- HIDE PRICE BREAKDOWN');
+                } else {
+                    content.css('display', 'none');
+                    $(this).text('+ DISPLAY PRICE BREAKDOWN');
+                }
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            var studentFaresRadio = document.getElementById('studentFares');
+            var previouslySelected = null;
 
-        // Initialize the return date field based on the default selected trip type
-        if ($('#oneWay').is(':checked') || $('#multiCity').is(':checked')) {
-            $('#returnDate').prop('disabled', true);
-        } else if ($('#roundTrip').is(':checked')) {
-            $('#returnDate').prop('disabled', false);
-        }
-    });
-    $(document).ready(function() {
-        $(document).on('click', '.price-breakdown', function() {
-            var index = $(this).data('index');
-            var content = $('#price-breakdown-' + index);
-            if (content.css('display') === 'none' || content.css('display') === '') {
-                content.css('display', 'block');
-                $(this).text('- HIDE PRICE BREAKDOWN');
-            } else {
-                content.css('display', 'none');
-                $(this).text('+ DISPLAY PRICE BREAKDOWN');
-            }
+            studentFaresRadio.addEventListener('click', function(event) {
+                if (previouslySelected === this) {
+                    this.checked = false;
+                    previouslySelected = null;
+                } else {
+                    previouslySelected = this;
+                }
+            });
         });
-    });
-    document.addEventListener('DOMContentLoaded', function() {
-        var studentFaresRadio = document.getElementById('studentFares');
-        var previouslySelected = null;
-
-        studentFaresRadio.addEventListener('click', function(event) {
-            if (previouslySelected === this) {
-                this.checked = false;
-                previouslySelected = null;
-            } else {
-                previouslySelected = this;
-            }
-        });
-    });
-</script>
+    </script>
 </body>
+
 </html>
