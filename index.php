@@ -181,7 +181,7 @@ session_start();
         } else {
         }
     }
-    function getFareXRefById($responseData, $fareIdToMatch)
+    function getTarifByFareId($responseData, $fareIdToMatch)
     {
         // Load XML from string
         $xml = simplexml_load_string($responseData);
@@ -189,16 +189,51 @@ session_start();
             die("Failed to load XML: " . implode(", ", libxml_get_errors()));
         }
 
-        // Find the <fareXRef> matching the given fareId
-        $matchedFareXRef = null;
-        foreach ($xml->xpath("//fareXRef[@fareId='$fareIdToMatch']") as $fareXRef) {
-            // Convert the matched <fareXRef> element to an array
-            $matchedFareXRef = json_decode(json_encode($fareXRef), true);
+        // Initialize the result variable
+        $matchedTarif = null;
+
+        // Loop through all <tarif> elements
+        foreach ($xml->xpath("//tarif[@tarifId='$fareIdToMatch']") as $tarif) {
+            // Convert the matched <tarif> element to an array
+            $matchedTarif = json_decode(json_encode($tarif), true);
             break; // Stop after finding the first match
         }
 
-        // Return the matched fareXRef array or null if not found
-        return $matchedFareXRef;
+        // Return the matched tarif array or null if not found
+        return $matchedTarif;
+    }
+    function searchLegById($filePath, $searchLegId)
+    {
+        // Load the XML file
+        $xml = simplexml_load_string($filePath) or die("Unable to load XML file!");
+
+        // Convert SimpleXMLElement to JSON and decode to associative array for easier handling
+        $xmlArray = json_decode(json_encode($xml), true);
+
+        // Check if <legs> exists in the XML structure
+        if (!isset($xmlArray['legs']['leg'])) {
+            return "No <legs> found in the XML.";
+        }
+
+        // Iterate through the <leg> elements
+        $legs = $xmlArray['legs']['leg'];
+        $matchingLegs = [];
+
+        foreach ($legs as $leg) {
+            // Check if the leg matches the searchLegId
+            if (
+                isset($leg['@attributes']['legId']) && $leg['@attributes']['legId'] == $searchLegId
+            ) {
+                $matchingLegs[] = $leg['@attributes'];
+            }
+        }
+
+        // Return the matching legs or a message if none found
+        if (!empty($matchingLegs)) {
+            return $matchingLegs;
+        } else {
+            return "No matching legs found for legId: $searchLegId.";
+        }
     }
     isset($_SESSION['formData']);
     if (isset($_POST['trip']) == "oneway") {
@@ -213,7 +248,7 @@ session_start();
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-02-12" dstApt="DEL" depApt="MEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
+            CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-02-12" dstApt="DEL" depApt="MEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>5</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
             CURLOPT_HTTPHEADER => array(
                 'accept: application/xml',
                 'accept-encoding: gzip',
@@ -243,7 +278,7 @@ session_start();
             ];
         }
         // var_dump($fareId);
-        var_dump($fares);
+        // var_dump($fares);
 
         curl_close($curl);
     } elseif (isset($_POST['trip']) == "roundtrip") {
@@ -417,22 +452,117 @@ session_start();
         </div>
     </div>
     <?php if (isset($responseData)): ?>
-        <?php $index = 1; foreach ($fares as $id): ?>
-            <?php 
-            $fareXRef = getFareXRefById($responseData, $id['fareId']); ?>
+        <?php $index = 1;
+        foreach ($fares as $id): ?>
+            <?php
+            $fareXRef = getTarifByFareId($responseData, $id['fareId']); ?>
             <div class="container">
                 <div class="offer-card">
                     <div><?php echo $index; ?></div>
+                    <div class="d-flex justify-content-end align-items-end my-3" style="gap: 2rem;">
+                        <div>
+                            Total price : 1× Adults
+                        </div>
+                        <div class="text-right">
+                            <div>Price p.p</div>
+                            <div style="font-weight: 600;"><?php echo $fareXRef["@attributes"]["adtSell"] ?> AUD</div>
+                        </div>
+                        <div style="font-weight: 700;font-size: x-large;"><?php echo $fareXRef["@attributes"]["adtSell"] ?> <sup>AUD</sup></div>
+                    </div>
                     <div class="d-flex justify-content-between">
                         <div>FareType : <?php echo "PUB"; ?></div>
                         <div>Departure : <?php echo $id['depApt']; ?></div>
                         <div>Destination : <?php echo $id['dstApt']; ?></div>
                         <div>Airline : <?php echo "Qatar Airways"; ?></div>
                     </div>
-                    <?php $value= 1; foreach ($fareXRef['flights']['flight'] as $flight): ?>
-                        <div class="p-2 card my-2"><?php echo $value; ?></div>
-                        <?php $value++; ?>
-                    <?php endforeach; ?>
+                    <?php
+                    // Assuming $fareXRef is the provided array
+                    $value = 1;
+                    $flights = $fareXRef["fareXRefs"]["fareXRef"]["flights"]["flight"];
+
+                    foreach ($flights as $flight): ?>
+                        <div class="d-flex justify-content-between p-2 border my-2">
+                            <?php if (isset($flight['@attributes'])): ?>
+                                <!-- <?php //var_dump($flight); 
+                                        ?>
+                                        ?> -->
+                                <?php
+                                if (isset($flight['legXRefs']['legXRef'])) {
+                                    foreach ($flight['legXRefs']['legXRef'] as $legXRef) {
+                                        if (isset($legXRef['@attributes']['legId'])) {
+                                            $legInfo[] = searchLegById($responseData, $legXRef['@attributes']['legId']);
+                                        }
+                                    }
+                                }
+                                $lastNumber = count($legInfo) - 1;
+                                ?>
+                                <div>
+                                    <div><span style="font-size: x-large;font-weight: 600; margin-right: 0.5rem;"><?php echo $legInfo[0][0]["depTime"]; ?></span><?php echo $legInfo[0][0]["depDate"]; ?></span></div>
+                                    <div><?php echo $legInfo[0][0]["depApt"]; ?></div>
+                                </div>
+                                <div>
+                                    <div><span style="font-size: x-large;font-weight: 600; margin-right: 0.5rem;"><?php echo $legInfo[$lastNumber][0]["arrTime"]; ?></span><?php echo $legInfo[$lastNumber][0]["arrDate"]; ?></span></div>
+                                    <div><?php echo $legInfo[$lastNumber][0]["dstApt"]; ?></div>
+                                </div>
+                                <button data-btn="<?php echo "flight_" . $value; ?>" class="btn" style="background-color: #a79e8044;">
+                                    <i class="fa-solid fa-angle-down fa-lg" style="color: #000000;"></i>
+                                </button>
+                            <?php else: ?>
+                                <!-- <?php //var_dump($flight)
+                                        ?> -->
+                                <div><?php echo $flight["flightId"]; ?></div>
+                                <div><?php echo $flight["addAdtPrice"]; ?></div>
+                                <div><?php echo $flight["addChdPrice"]; ?></div>
+                                <button data-btn="<?php echo "flight_" . $value; ?>" class="btn" style="background-color: #a79e8044;">
+                                    <i class="fa-solid fa-angle-down fa-lg" style="color: #000000;"></i>
+                                </button>
+                            <?php endif ?>
+                        </div>
+                        <div data-view="flight_<?php echo $value; ?>" class="p-2 border my-2 d-none">
+                            <?php foreach($legInfo as $leg): ?>
+                                <div><?php var_dump($leg);?></div>
+                            <div class="card border-0">
+                                <!-- First Segment -->
+                                <div class="row align-items-center">
+                                    <div class="col-1 text-center">
+                                        <div class="mb-2">
+                                            <div class="rounded-circle bg-warning" style="width: 10px; height: 10px;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-10">
+                                        <p class="mb-0 text-muted">Saturday 28.12.2024</p>
+                                        <h6 class="mb-0">Melbourne (MEL), Tullamarine Intl.</h6>
+                                        <p class="fw-bold fs-5 mb-0">23:30</p>
+                                        <p class="text-muted small mb-0">Duration 14:20 h | Distance: 11972 km</p>
+                                        <div class="d-flex align-items-center mt-2">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Qatar_Airways_logo.png" alt="Qatar Airways" style="height: 20px;">
+                                            <span class="ms-2">Qatar Airways</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Second Segment -->
+                                <div class="row align-items-center mt-3">
+                                    <div class="col-1 text-center">
+                                        <div class="mb-2">
+                                            <div class="rounded-circle bg-secondary" style="width: 10px; height: 10px;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-10">
+                                        <p class="mb-0 text-muted">Sunday 29.12.2024</p>
+                                        <h6 class="mb-0">Doha (DOH), Hamad International</h6>
+                                        <p class="fw-bold fs-5 mb-0">05:50</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <div class="d-flex justify-content-end my-3">
+                                <button class="book-btn">Book Offer</button>
+                            </div>
+                        </div>
+                    <?php $value++;
+                    endforeach; ?>
+
                 </div>
             </div>
             <?php $index++; ?>
@@ -440,6 +570,34 @@ session_start();
     <?php endif; ?>
     <script>
         $(document).ready(function() {
+            // Select all buttons with a data-btn attribute
+            const buttons = $("[data-btn]");
+
+            // Variable to track the currently visible view
+            let activeView = null;
+
+            // Attach click event listener to each button
+            buttons.on("click", function() {
+                // Get the value of the data-btn attribute
+                const target = $(this).attr("data-btn");
+
+                // Find the corresponding data-view element
+                const view = $(`[data-view="${target}"]`);
+
+                // If the view element exists
+                if (view.length) {
+                    // Hide the previously active view if it exists and is not the same as the current view
+                    if (activeView && activeView[0] !== view[0]) {
+                        activeView.addClass("d-none");
+                    }
+
+                    // Toggle the visibility of the current view
+                    view.toggleClass("d-none");
+
+                    // Update the active view (or set to null if the current view is hidden)
+                    activeView = view.hasClass("d-none") ? null : view;
+                }
+            });
             // Cities array
             var cities = [{
                     label: "Mumbai",

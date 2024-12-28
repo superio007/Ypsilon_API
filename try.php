@@ -1,23 +1,38 @@
 <?php
-function getFareXRefById($responseData, $fareIdToMatch)
+// Function to search and extract leg details
+function searchLegById($filePath, $searchLegId)
 {
-  // Load XML from string
-  $xml = simplexml_load_string($responseData);
-  if ($xml === false) {
-    die("Failed to load XML: " . implode(", ", libxml_get_errors()));
-  }
+    // Load the XML file
+    $xml = simplexml_load_string($filePath) or die("Unable to load XML file!");
 
-  // Find the <fareXRef> matching the given fareId
-  $matchedFareXRef = null;
-  foreach ($xml->xpath("//fareXRef[@fareId='$fareIdToMatch']") as $fareXRef) {
-    // Convert the matched <fareXRef> element to an array
-    $matchedFareXRef = json_decode(json_encode($fareXRef), true);
-    break; // Stop after finding the first match
-  }
+    // Convert SimpleXMLElement to JSON and decode to associative array for easier handling
+    $xmlArray = json_decode(json_encode($xml), true);
 
-  // Return the matched fareXRef array or null if not found
-  return $matchedFareXRef;
+    // Check if <legs> exists in the XML structure
+    if (!isset($xmlArray['legs']['leg'])) {
+        return "No <legs> found in the XML.";
+    }
+
+    // Iterate through the <leg> elements
+    $legs = $xmlArray['legs']['leg'];
+    $matchingLegs = [];
+
+    foreach ($legs as $leg) {
+        // Check if the leg matches the searchLegId
+        if (isset($leg['@attributes']['legId']) && $leg['@attributes']['legId'] == $searchLegId
+        ) {
+            $matchingLegs[] = $leg['@attributes'];
+        }
+    }
+
+    // Return the matching legs or a message if none found
+    if (!empty($matchingLegs)) {
+        return $matchingLegs;
+    } else {
+        return "No matching legs found for legId: $searchLegId.";
+    }
 }
+
 
 $responseData = '
 <availResponse xmlns:shared="http://ypsilon.net/shared" cntTarifs="15" offset="0">
@@ -1907,4 +1922,5 @@ $responseData = '
     </serviceMappings>
 </availResponse>
 ';
-var_dump(getFareXRefById($responseData, "1418816033"));
+$legId = "1565794488";
+var_dump(searchLegById($responseData, $legId));
