@@ -248,7 +248,7 @@ session_start();
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-02-12" dstApt="DEL" depApt="MEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>5</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
+            CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-02-12" dstApt="DEL" depApt="MEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
             CURLOPT_HTTPHEADER => array(
                 'accept: application/xml',
                 'accept-encoding: gzip',
@@ -263,18 +263,37 @@ session_start();
             ),
         ));
         $responseData = curl_exec($curl);
+        if ($responseData === false) {
+            echo 'cURL Error: ' . curl_error($curl);
+            curl_close($curl);
+            exit;
+        }
+
+        libxml_use_internal_errors(true);
         $xml = simplexml_load_string($responseData);
+        if (
+            $xml === false
+        ) {
+            echo "Failed to parse XML. Errors:\n";
+            foreach (libxml_get_errors() as $error) {
+                echo $error->message, "\n";
+            }
+            libxml_clear_errors();
+            exit;
+        }
+
         // Register namespaces for elements with prefixes
         $xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
+
         $fareId = [];
         foreach ($xml->fares->fare as $fare) {
             $fareId[] = (string)$fare['fareId']; // Access fareId attribute
             $fares[] = [
                 'fareId' => (string)$fare['fareId'],
-                'shared:fareType' => (string)$fare['fareType'],
+                'shared:fareType' => (string)$fare->children('shared', true)->fareType,
                 'depApt' => (string)$fare['depApt'],
                 'dstApt' => (string)$fare['dstApt'],
-                'shared:vcr' => (string)$fare['vcr'],
+                'shared:vcr' => (string)$fare->children('shared', true)->vcr,
             ];
         }
         // var_dump($fareId);
@@ -519,42 +538,48 @@ session_start();
                             <?php endif ?>
                         </div>
                         <div data-view="flight_<?php echo $value; ?>" class="p-2 border my-2 d-none">
-                            <?php foreach($legInfo as $leg): ?>
-                                <div><?php var_dump($leg);?></div>
-                            <div class="card border-0">
-                                <!-- First Segment -->
-                                <div class="row align-items-center">
-                                    <div class="col-1 text-center">
-                                        <div class="mb-2">
-                                            <div class="rounded-circle bg-warning" style="width: 10px; height: 10px;"></div>
+                            <?php foreach ($legInfo as $leg): ?>
+                                <?php
+                                // Access the first element of the $leg array
+                                $legData = isset($leg[0]) ? $leg[0] : [];
+                                ?>
+                                <div class="card border-0">
+                                    <!-- First Segment -->
+                                    <div class="row align-items-center">
+                                        <div class="col-1 text-center">
+                                            <div class="mb-2">
+                                                <div class="rounded-circle bg-warning" style="width: 10px; height: 10px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-10">
+                                            <p class="mb-0 text-muted"><?php echo $legData["depDate"] ?? "N/A"; ?></p>
+                                            <h6 class="mb-0"><?php echo $legData["depApt"] ?? "N/A"; ?></h6>
+                                            <p class="fw-bold fs-5 mb-0"><?php echo $legData["depTime"] ?? "N/A"; ?></p>
+                                            <p class="text-muted small mb-0">
+                                                Duration <?php echo $legData["elapsed"] ?? "N/A"; ?> Hours |
+                                                Distance: <?php echo $legData["miles"] ?? "N/A"; ?> Miles
+                                            </p>
+                                            <div class="d-flex align-items-center mt-2">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Qatar_Airways_logo.png" alt="Qatar Airways" style="height: 20px;">
+                                                <span class="ms-2">Qatar Airways</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-10">
-                                        <p class="mb-0 text-muted">Saturday 28.12.2024</p>
-                                        <h6 class="mb-0">Melbourne (MEL), Tullamarine Intl.</h6>
-                                        <p class="fw-bold fs-5 mb-0">23:30</p>
-                                        <p class="text-muted small mb-0">Duration 14:20 h | Distance: 11972 km</p>
-                                        <div class="d-flex align-items-center mt-2">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Qatar_Airways_logo.png" alt="Qatar Airways" style="height: 20px;">
-                                            <span class="ms-2">Qatar Airways</span>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <!-- Second Segment -->
-                                <div class="row align-items-center mt-3">
-                                    <div class="col-1 text-center">
-                                        <div class="mb-2">
-                                            <div class="rounded-circle bg-secondary" style="width: 10px; height: 10px;"></div>
+                                    <!-- Second Segment -->
+                                    <div class="row align-items-center mt-3">
+                                        <div class="col-1 text-center">
+                                            <div class="mb-2">
+                                                <div class="rounded-circle bg-secondary" style="width: 10px; height: 10px;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-10">
+                                            <p class="mb-0 text-muted"><?php echo $legData["arrDate"] ?? "N/A"; ?></p>
+                                            <h6 class="mb-0"><?php echo $legData["dstApt"] ?? "N/A"; ?></h6>
+                                            <p class="fw-bold fs-5 mb-0"><?php echo $legData["arrTime"] ?? "N/A"; ?></p>
                                         </div>
                                     </div>
-                                    <div class="col-10">
-                                        <p class="mb-0 text-muted">Sunday 29.12.2024</p>
-                                        <h6 class="mb-0">Doha (DOH), Hamad International</h6>
-                                        <p class="fw-bold fs-5 mb-0">05:50</p>
-                                    </div>
                                 </div>
-                            </div>
                             <?php endforeach; ?>
                             <div class="d-flex justify-content-end my-3">
                                 <button class="book-btn">Book Offer</button>
