@@ -238,7 +238,9 @@ session_start();
     isset($_SESSION['formData']);
     if (isset($_POST['trip']) == "oneway") {
         $curl = curl_init();
-
+        $depDate = $departureDate;
+        $depApt = $departFrom;
+        $dstApt = $flyingTo;
         curl_setopt_array($curl, array(
             CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
             CURLOPT_RETURNTRANSFER => true,
@@ -248,7 +250,7 @@ session_start();
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-02-12" dstApt="DEL" depApt="MEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
+            CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
             CURLOPT_HTTPHEADER => array(
                 'accept: application/xml',
                 'accept-encoding: gzip',
@@ -502,33 +504,42 @@ session_start();
                     foreach ($flights as $flight): ?>
                         <div class="d-flex justify-content-between p-2 border my-2">
                             <?php if (isset($flight['@attributes'])): ?>
-                                <!-- <?php //var_dump($flight); 
-                                        ?>
-                                        ?> -->
                                 <?php
+                                // Reset $legInfo at the beginning of each flight iteration
+                                $legInfo = [];
+
                                 if (isset($flight['legXRefs']['legXRef'])) {
                                     foreach ($flight['legXRefs']['legXRef'] as $legXRef) {
                                         if (isset($legXRef['@attributes']['legId'])) {
-                                            $legInfo[] = searchLegById($responseData, $legXRef['@attributes']['legId']);
+                                            // Fetch and append leg data to $legInfo
+                                            $legData = searchLegById($responseData, $legXRef['@attributes']['legId']);
+                                            if (!empty($legData)) {
+                                                $legInfo[] = $legData;
+                                            }
                                         }
                                     }
                                 }
+
                                 $lastNumber = count($legInfo) - 1;
                                 ?>
                                 <div>
-                                    <div><span style="font-size: x-large;font-weight: 600; margin-right: 0.5rem;"><?php echo $legInfo[0][0]["depTime"]; ?></span><?php echo $legInfo[0][0]["depDate"]; ?></span></div>
-                                    <div><?php echo $legInfo[0][0]["depApt"]; ?></div>
+                                    <div>
+                                        <span style="font-size: x-large; font-weight: 600; margin-right: 0.5rem;"><?php echo $legInfo[0][0]["depTime"] ?? "N/A"; ?></span>
+                                        <?php echo $legInfo[0][0]["depDate"] ?? "N/A"; ?>
+                                    </div>
+                                    <div><?php echo $legInfo[0][0]["depApt"] ?? "N/A"; ?></div>
                                 </div>
                                 <div>
-                                    <div><span style="font-size: x-large;font-weight: 600; margin-right: 0.5rem;"><?php echo $legInfo[$lastNumber][0]["arrTime"]; ?></span><?php echo $legInfo[$lastNumber][0]["arrDate"]; ?></span></div>
-                                    <div><?php echo $legInfo[$lastNumber][0]["dstApt"]; ?></div>
+                                    <div>
+                                        <span style="font-size: x-large; font-weight: 600; margin-right: 0.5rem;"><?php echo $legInfo[$lastNumber][0]["arrTime"] ?? "N/A"; ?></span>
+                                        <?php echo $legInfo[$lastNumber][0]["arrDate"] ?? "N/A"; ?>
+                                    </div>
+                                    <div><?php echo $legInfo[$lastNumber][0]["dstApt"] ?? "N/A"; ?></div>
                                 </div>
                                 <button data-btn="<?php echo "flight_" . $value; ?>" class="btn" style="background-color: #a79e8044;">
                                     <i class="fa-solid fa-angle-down fa-lg" style="color: #000000;"></i>
                                 </button>
                             <?php else: ?>
-                                <!-- <?php //var_dump($flight)
-                                        ?> -->
                                 <div><?php echo $flight["flightId"]; ?></div>
                                 <div><?php echo $flight["addAdtPrice"]; ?></div>
                                 <div><?php echo $flight["addChdPrice"]; ?></div>
@@ -588,6 +599,7 @@ session_start();
                     <?php $value++;
                     endforeach; ?>
 
+
                 </div>
             </div>
             <?php $index++; ?>
@@ -627,6 +639,14 @@ session_start();
             var cities = [{
                     label: "Mumbai",
                     value: "BOM"
+                },
+                {
+                    label:"Melbourne",
+                    value:"MEL"
+                },
+                {
+                    label: "Adelaide",
+                    value: "ADL"
                 },
                 {
                     label: "Delhi",
