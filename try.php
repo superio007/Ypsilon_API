@@ -1,4 +1,6 @@
 <?php
+session_start();
+var_dump($_SESSION['responseData']);
 
 $bookingRequestPayload = <<<XML
 <?xml version='1.0' encoding='UTF-8'?>
