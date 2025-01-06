@@ -189,19 +189,21 @@ session_start();
             die("Failed to load XML: " . implode(", ", libxml_get_errors()));
         }
 
-        // Initialize the result variable
-        $matchedTarif = null;
-
-        // Loop through all <tarif> elements
-        foreach ($xml->xpath("//tarif[@tarifId='$fareIdToMatch']") as $tarif) {
+        // Search for <tarif> elements with the matching fareId
+        foreach ($xml->xpath("//tarif[@tarifid='$fareIdToMatch']") as $tarif) {
             // Convert the matched <tarif> element to an array
             $matchedTarif = json_decode(json_encode($tarif), true);
-            break; // Stop after finding the first match
+
+            // Ensure 'adtsell' exists in the matched tarif
+            if (isset($matchedTarif['@attributes']['adtsell'])) {
+                return $matchedTarif['@attributes']['adtsell'];
+            }
         }
 
-        // Return the matched tarif array or null if not found
-        return $matchedTarif;
+        // Return null if no match is found
+        return null;
     }
+
     function searchLegById($filePath, $searchLegId)
     {
         // Load the XML file
@@ -265,6 +267,7 @@ session_start();
             ),
         ));
         $responseData = curl_exec($curl);
+        $_SESSION['responseData'] = $responseData;
         if ($responseData === false) {
             echo 'cURL Error: ' . curl_error($curl);
             curl_close($curl);
@@ -641,8 +644,8 @@ session_start();
                     value: "BOM"
                 },
                 {
-                    label:"Melbourne",
-                    value:"MEL"
+                    label: "Melbourne",
+                    value: "MEL"
                 },
                 {
                     label: "Adelaide",
