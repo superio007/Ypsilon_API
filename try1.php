@@ -1,32 +1,81 @@
 <?php
 
-$curl = curl_init();
+function getFlightIdByLegId($data, $legId)
+{
+  // Traverse the main array
+  foreach ($data as $tarif) {
+    if (isset($tarif['farexrefs'])) {
+      // Traverse the farexrefs
+      foreach ($tarif['farexrefs'] as $farexref) {
+        if (isset($farexref['flights'])) {
+          // Traverse the flights
+          foreach ($farexref['flights'] as $flight) {
+            if (isset($flight['legxrefs'])) {
+              // Traverse the legxrefs
+              foreach ($flight['legxrefs'] as $legxref) {
+                // Check if the legxref matches the provided legid
+                if (isset($legxref['@attributes']['legid']) && $legxref['@attributes']['legid'] == $legId) {
+                  // Return the flight ID if legid matches
+                  return $flight['attributes']['@attributes']['flightid'] ?? null;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
-curl_setopt_array($curl, array(
-  CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_ENCODING => '',
-  CURLOPT_MAXREDIRS => 10,
-  CURLOPT_TIMEOUT => 0,
-  CURLOPT_FOLLOWLOCATION => true,
-  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-  CURLOPT_CUSTOMREQUEST => 'POST',
-  CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-02-12" dstApt="DEL" depApt="MEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
-  CURLOPT_HTTPHEADER => array(
-    'accept: application/xml',
-    'accept-encoding: gzip',
-    'api-version: 3.92',
-    'accessmode: agency',
-    'accessid: gaura gaura',
-    'authmode: pwd',
-    'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
-    'content-Length: 494',
-    'Connection: close',
-    'Content-Type: text/plain'
-  ),
-));
+  // Return null if no match is found
+  return null;
+}
 
-$response = curl_exec($curl);
+// Sample data extracted from your array
+$data = [
+  [
+    'attributes' => [
+      '@attributes' => [
+        'tarifid' => '598152908'
+      ]
+    ],
+    'farexrefs' => [
+      [
+        'attributes' => [
+          '@attributes' => [
+            'fareid' => '598152908'
+          ]
+        ],
+        'flights' => [
+          [
+            'attributes' => [
+              '@attributes' => [
+                'flightid' => '1672176513'
+              ]
+            ],
+            'legxrefs' => [
+              [
+                '@attributes' => [
+                  'legid' => '362602527',
+                  'class' => 'O',
+                  'cos' => 'E'
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+];
 
-curl_close($curl);
-echo $response;
+// Specify the legid to search for
+$legIdToSearch = '362602527';
+
+// Get the flight ID
+$flightId = getFlightIdByLegId($data, $legIdToSearch);
+
+if ($flightId) {
+  echo "Flight ID for Leg ID {$legIdToSearch}: {$flightId}";
+} else {
+  echo "No matching Flight ID found for Leg ID {$legIdToSearch}.";
+}

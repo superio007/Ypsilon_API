@@ -1,30 +1,42 @@
 <?php
 session_start();
-$responseData = $_SESSION['responseData'];
-function getTarifByFareId($responseData, $fareIdToMatch)
-{
-    // Load XML from string
-    $xml = simplexml_load_string($responseData);
-    if ($xml === false) {
-        die("Failed to load XML: " . implode(", ", libxml_get_errors()));
-    }
 
-    // Initialize the result variable
-    $matchedTarif = null;
+// Get the XML response from the session and parse it
+$response = $_SESSION['responseData'];
+$xmlData = simplexml_load_string($response);
 
-    // Loop through all <tarif> elements
-    foreach ($xml->xpath("//tarif[@tarifId='$fareIdToMatch']") as $tarif) {
-        // Convert the matched <tarif> element to an array
-        $matchedTarif = json_decode(json_encode($tarif), true);
-        break; // Stop after finding the first match
-    }
-
-    // Return the matched tarif array or null if not found
-    return $matchedTarif['@attributes']['adtSell'];
+if (!$xmlData) {
+    die("Failed to parse XML data.");
 }
 
-$result = getTarifByFareId($responseData, "1229133828");
+// Function to retrieve fare ID based on leg ID
+function getFareIdFromLegId(SimpleXMLElement $xml, $legId)
+{
+    // Navigate through farexrefs -> flights -> legxrefs -> legxref to match legid
+    foreach ($xml->xpath('//farexrefs/farexref') as $farexref) {
+        $fareId = (string)$farexref['fareid'];
+        foreach ($farexref->xpath('./flights/flight/legxrefs/legxref') as $legxref) {
+            if ((string)$legxref['legid'] === $legId) {
+                return $fareId;
+            }
+        }
+    }
 
-// Display the filtered results
-header('Content-Type: application/json');
-echo json_encode($result, JSON_PRETTY_PRINT);
+    // Return null if no matching fareid is found
+    return null;
+}
+
+// Example usage
+$legIdToSearch = '362602527'; // Replace with the desired leg ID
+$fareId = getFareIdFromLegId($xmlData, $legIdToSearch);
+
+// Display results
+if ($fareId) {
+    echo "Fare ID for leg ID $legIdToSearch: $fareId";
+} else {
+    echo "No Fare ID found for leg ID $legIdToSearch";
+}
+
+// Optional: Display the entire XML as JSON
+$xmlAsJson = json_encode($xmlData, JSON_PRETTY_PRINT);
+echo "<pre>$xmlAsJson</pre>";
