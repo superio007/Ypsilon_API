@@ -1,81 +1,53 @@
 <?php
+session_start();
 
-function getFlightIdByLegId($data, $legId)
-{
-  // Traverse the main array
-  foreach ($data as $tarif) {
-    if (isset($tarif['farexrefs'])) {
-      // Traverse the farexrefs
-      foreach ($tarif['farexrefs'] as $farexref) {
-        if (isset($farexref['flights'])) {
-          // Traverse the flights
-          foreach ($farexref['flights'] as $flight) {
-            if (isset($flight['legxrefs'])) {
-              // Traverse the legxrefs
-              foreach ($flight['legxrefs'] as $legxref) {
-                // Check if the legxref matches the provided legid
-                if (isset($legxref['@attributes']['legid']) && $legxref['@attributes']['legid'] == $legId) {
-                  // Return the flight ID if legid matches
-                  return $flight['attributes']['@attributes']['flightid'] ?? null;
-                }
-              }
-            }
-          }
-        }
-      }
+// Ensure the session contains the response data
+$responseData = $_SESSION['responseData'] ?? null;
+
+function getTarifDataById($tarifid, $xmlString) {
+    // Check if XML string is valid
+    if (empty($xmlString)) {
+        return "Error: No XML data provided.";
     }
-  }
 
-  // Return null if no match is found
-  return null;
+    // Load the XML from string
+    $xml = simplexml_load_string($xmlString);
+    if (!$xml) {
+        return "Error: Unable to parse XML data.";
+    }
+
+    // Search for the tarif by ID
+    foreach ($xml->xpath("//tarif[@tarifid='$tarifid']") as $tarif) {
+        // Extract data into an associative array
+        return [
+            'tarifid' => (string)$tarif['tarifid'],
+            'adtbuy' => (string)$tarif['adtbuy'],
+            'adtsell' => (string)$tarif['adtsell'],
+            'chdbuy' => (string)$tarif['chdbuy'],
+            'chdsell' => (string)$tarif['chdsell'],
+            'infbuy' => (string)$tarif['infbuy'],
+            'infsell' => (string)$tarif['infsell'],
+            'adttax' => (string)$tarif['adttax'],
+            'chdtax' => (string)$tarif['chdtax'],
+            'inftax' => (string)$tarif['inftax'],
+            'origin' => (string)$tarif['origin'],
+            'taxmode' => (string)$tarif['taxmode'],
+            'refundable' => (string)($tarif['refundable'] ?? 'false'),
+        ];
+    }
+
+    return "Error: Tarif ID not found.";
 }
 
-// Sample data extracted from your array
-$data = [
-  [
-    'attributes' => [
-      '@attributes' => [
-        'tarifid' => '598152908'
-      ]
-    ],
-    'farexrefs' => [
-      [
-        'attributes' => [
-          '@attributes' => [
-            'fareid' => '598152908'
-          ]
-        ],
-        'flights' => [
-          [
-            'attributes' => [
-              '@attributes' => [
-                'flightid' => '1672176513'
-              ]
-            ],
-            'legxrefs' => [
-              [
-                '@attributes' => [
-                  'legid' => '362602527',
-                  'class' => 'O',
-                  'cos' => 'E'
-                ]
-              ]
-            ]
-          ]
-        ]
-      ]
-    ]
-  ]
-];
+// Example usage
+$tarifid = '1442014243';
+$result = getTarifDataById($tarifid, $responseData);
 
-// Specify the legid to search for
-$legIdToSearch = '362602527';
-
-// Get the flight ID
-$flightId = getFlightIdByLegId($data, $legIdToSearch);
-
-if ($flightId) {
-  echo "Flight ID for Leg ID {$legIdToSearch}: {$flightId}";
+// Output the result
+if (is_array($result)) {
+    echo "Tarif Data:\n";
+    print_r($result);
 } else {
-  echo "No matching Flight ID found for Leg ID {$legIdToSearch}.";
+    echo $result; // Error message
 }
+

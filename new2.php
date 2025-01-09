@@ -159,6 +159,7 @@ session_start();
       'total' => $total
     ];
   }
+  // For loading all flights 
   function getFlightsWithLegs($xmlData)
   {
     // Load the XML data
@@ -198,29 +199,55 @@ session_start();
 
     return $flightsWithLegs;
   }
-  function getTarifByFareId($responseData, $fareIdToMatch)
+  // To get flight Id from legId
+  function getFareIdFromLegId($legId, $response)
   {
-    // Load XML from string
-    $xml = simplexml_load_string($responseData);
-    if ($xml === false) {
-      die("Failed to load XML: " . implode(", ", libxml_get_errors()));
+
+
+    if (!$response) {
+      return "No XML data found in session.";
     }
 
-    // Search for <tarif> elements with the matching fareId
-    foreach ($xml->xpath("//tarif[@tarifid='$fareIdToMatch']") as $tarif) {
-      // Convert the matched <tarif> element to an array
-      $matchedTarif = json_decode(json_encode($tarif), true);
+    // Parse the XML data
+    $xmlData = simplexml_load_string($response);
 
-      // Ensure 'adtsell' exists in the matched tarif
-      if (isset($matchedTarif['@attributes']['adtsell'])) {
-        return $matchedTarif['@attributes']['adtsell'];
+    if (!$xmlData) {
+      return "Failed to parse XML data.";
+    }
+
+    // Navigate the XML structure to match the legId
+    foreach ($xmlData->xpath('//tarifs/tarif') as $tarif) {
+      $fareId = (string)$tarif->fareXRefs->fareXRef['fareId']; // Get fare ID from attribute
+      foreach ($tarif->xpath('./fareXRefs/fareXRef/flights/flight/legXRefs/legXRef') as $legXRef) {
+        if ((string)$legXRef['legId'] === $legId) {
+          return $fareId; // Return fareId if a match is found
+        }
       }
     }
 
-    // Return null if no match is found
-    return null;
+    // Return message if no matching fareId is found
+    return "No Fare ID found for leg ID $legId.";
   }
+  // To get adtSell from tarifId
+  function getAdtSellByTarifId($tarifId, $xmlData)
+  {
+    // Load the XML data
+    $xml = simplexml_load_string($xmlData);
 
+    if (!$xml) {
+      return "Failed to load XML data.";
+    }
+
+    // Search for the tarif with the specified ID
+    foreach ($xml->tarifs->tarif as $tarif) {
+      if ((string)$tarif['tarifId'] === $tarifId) {
+        // Return the adtSell value for the matched tarif
+        return (string)$tarif['adtSell'];
+      }
+    }
+
+    return "Tarif ID {$tarifId} not found.";
+  }
   isset($_SESSION['formData']);
   if (isset($_POST['trip']) == "oneway") {
     $curl = curl_init();
@@ -252,7 +279,7 @@ session_start();
     ));
     $responseData = curl_exec($curl);
     $_SESSION['responseData'] = $responseData;
-    var_dump($_SESSION['responseData']);
+    // var_dump($_SESSION['responseData']);
     if ($responseData === false) {
       echo 'cURL Error: ' . curl_error($curl);
       curl_close($curl);
@@ -265,64 +292,44 @@ session_start();
 
     curl_close($curl);
   } elseif (isset($_POST['trip']) == "roundtrip") {
-    // API endpoint
-    $url = 'https://sandboxapi.getfares.com/Flights/Search/v1'; // Replace with your actual URL
-
-    // Data to be sent in the body of the request
-    $data = [
-      "originDestinations" => [
-        [
-          "departureDateTime" => $departureDate . "T09:10:27.482Z",
-          "origin" => (string)$departFrom,
-          "destination" => (string)$flyingTo
-        ],
-        [
-          "departureDateTime" => $returnDate . "10:27.482Z",
-          "origin" => (string)$flyingTo,
-          "destination" => (string)$departFrom
-        ]
-      ],
-      "adultCount" => $adultsCount,
-      "childCount" => $childrenCount,
-      "infantCount" => $infantsCount,
-      "cabinClass" => $travelClass,
-      "cabinPreferenceType" => "Preferred",
-      "stopOver" => "None",
-      "airTravelType" => $tripType,
-      "includeBaggage" => true,
-      "includeMiniRules" => true
-    ];
-
-    // Convert data array to JSON format
-    $jsonData = json_encode($data);
-
-    // Initialize cURL session
-    $ch = curl_init();
-
-    // Set the URL and other options for the cURL session
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-      'Content-Type: application/json',
-      "Authorization: Bearer $token"
-    ]);
-
-    // Execute the cURL session and fetch the response
-    $response = curl_exec($ch);
-
-    // Check for errors
-    if ($response === false) {
-      echo 'cURL Error: ' . curl_error($ch);
-    } else {
-      // Decode and print the response
-      $responseData = json_decode($response, true);
-      print_r($responseData);
+    $curl = curl_init();
+    $depDate = $departureDate;
+    $depApt = $departFrom;
+    $dstApt = $flyingTo;
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
+      CURLOPT_HTTPHEADER => array(
+        'accept: application/xml',
+        'accept-encoding: gzip',
+        'api-version: 3.92',
+        'accessmode: agency',
+        'accessid: gaura gaura',
+        'authmode: pwd',
+        'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
+        'content-Length: 494',
+        'Connection: close',
+        'Content-Type: text/plain'
+      ),
+    ));
+    $responseData = curl_exec($curl);
+    $_SESSION['responseData'] = $responseData;
+    // var_dump($_SESSION['responseData']);
+    if ($responseData === false) {
+      echo 'cURL Error: ' . curl_error($curl);
+      curl_close($curl);
+      exit;
     }
 
-    // Close the cURL session
-    curl_close($ch);
+    libxml_use_internal_errors(true);
+    $fares = getFlightsWithLegs($responseData);
   }
   ?>
   <div class="container my-5">
@@ -650,7 +657,7 @@ session_start();
                 <div
                   class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
                   <p class="m-0 fw-bold text-center">Price p.p</p>
-                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;"><?php $farid = $id[0]['legId']; echo $farid;?><?php var_dump(getTarifByFareId($responseData,$farid)); ?></span></p>
+                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;"><?php $farid = $id[0]['legId']; $tarifId =getFareIdFromLegId($farid,$responseData); echo getAdtSellByTarifId($tarifId,$responseData); ?></span></p>
                   <button
                     class="btn book-button px-3"
                     style="background-color: #05203c; color: #fff">

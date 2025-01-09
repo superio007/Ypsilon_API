@@ -1,42 +1,36 @@
 <?php
-session_start();
-
-// Get the XML response from the session and parse it
-$response = $_SESSION['responseData'];
-$xmlData = simplexml_load_string($response);
-
-if (!$xmlData) {
-    die("Failed to parse XML data.");
-}
-
-// Function to retrieve fare ID based on leg ID
-function getFareIdFromLegId(SimpleXMLElement $xml, $legId)
+function getAdtSellByTarifId($tarifId, $xmlData)
 {
-    // Navigate through farexrefs -> flights -> legxrefs -> legxref to match legid
-    foreach ($xml->xpath('//farexrefs/farexref') as $farexref) {
-        $fareId = (string)$farexref['fareid'];
-        foreach ($farexref->xpath('./flights/flight/legxrefs/legxref') as $legxref) {
-            if ((string)$legxref['legid'] === $legId) {
-                return $fareId;
-            }
+    // Load the XML data
+    $xml = simplexml_load_string($xmlData);
+
+    if (!$xml) {
+        return "Failed to load XML data.";
+    }
+
+    // Search for the tarif with the specified ID
+    foreach ($xml->tarifs->tarif as $tarif) {
+        if ((string)$tarif['tarifId'] === $tarifId) {
+            // Return the adtSell value for the matched tarif
+            return (string)$tarif['adtSell'];
         }
     }
 
-    // Return null if no matching fareid is found
-    return null;
+    return "Tarif ID {$tarifId} not found.";
 }
 
 // Example usage
-$legIdToSearch = '362602527'; // Replace with the desired leg ID
-$fareId = getFareIdFromLegId($xmlData, $legIdToSearch);
+session_start();
 
-// Display results
-if ($fareId) {
-    echo "Fare ID for leg ID $legIdToSearch: $fareId";
-} else {
-    echo "No Fare ID found for leg ID $legIdToSearch";
+if (!isset($_SESSION['responseData'])) {
+    die("No XML data found in session.");
 }
 
-// Optional: Display the entire XML as JSON
-$xmlAsJson = json_encode($xmlData, JSON_PRETTY_PRINT);
-echo "<pre>$xmlAsJson</pre>";
+$responseData = $_SESSION['responseData'];
+
+// Provide the tarif ID to filter
+$tarifId = '1442014270'; // Replace with the ID you want to search for
+$adtSellValue = getAdtSellByTarifId($tarifId, $responseData);
+
+// Output the result
+echo "AdtSell Value for Tarif ID {$tarifId}: {$adtSellValue}";
