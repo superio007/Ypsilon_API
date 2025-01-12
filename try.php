@@ -1,36 +1,42 @@
 <?php
-function getAdtSellByTarifId($tarifId, $xmlData)
-{
-    // Load the XML data
-    $xml = simplexml_load_string($xmlData);
 
-    if (!$xml) {
-        return "Failed to load XML data.";
-    }
+$curl = curl_init();
+$depDate = "2025-02-24";
+$depApt = "MEL";
+$dstApt = "DEL";
+$returnDate = "2025-02-26";
 
-    // Search for the tarif with the specified ID
-    foreach ($xml->tarifs->tarif as $tarif) {
-        if ((string)$tarif['tarifId'] === $tarifId) {
-            // Return the adtSell value for the matched tarif
-            return (string)$tarif['adtSell'];
-        }
-    }
+curl_setopt_array($curl, array(
+    CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_ENCODING => '',
+    CURLOPT_MAXREDIRS => 10,
+    CURLOPT_TIMEOUT => 0,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+    CURLOPT_CUSTOMREQUEST => 'POST',
+    CURLOPT_POSTFIELDS => "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"$depDate\" dstApt=\"$depApt\" depApt=\"$dstApt\"/><flight depDate=\"$returnDate\" dstApt=\"$dstApt\" depApt=\"$depApt\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>",
+    CURLOPT_HTTPHEADER => array(
+        'accept: application/xml',
+        'accept-encoding: gzip',
+        'api-version: 3.92',
+        'accessmode: agency',
+        'accessid: gaura gaura',
+        'authmode: pwd',
+        'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
+        'Content-Type: application/xml'
+    ),
+));
 
-    return "Tarif ID {$tarifId} not found.";
+$response = curl_exec($curl);
+
+// Error handling
+if (curl_errno($curl)) {
+    echo 'cURL Error: ' . curl_error($curl);
+} else {
+    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    echo "HTTP Code: $httpCode\n";
+    var_dump($response);
 }
 
-// Example usage
-session_start();
-
-if (!isset($_SESSION['responseData'])) {
-    die("No XML data found in session.");
-}
-
-$responseData = $_SESSION['responseData'];
-
-// Provide the tarif ID to filter
-$tarifId = '1442014270'; // Replace with the ID you want to search for
-$adtSellValue = getAdtSellByTarifId($tarifId, $responseData);
-
-// Output the result
-echo "AdtSell Value for Tarif ID {$tarifId}: {$adtSellValue}";
+curl_close($curl);

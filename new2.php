@@ -296,6 +296,8 @@ session_start();
     $depDate = $departureDate;
     $depApt = $departFrom;
     $dstApt = $flyingTo;
+    $returnDate = $returnDate;
+
     curl_setopt_array($curl, array(
       CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
       CURLOPT_RETURNTRANSFER => true,
@@ -305,7 +307,7 @@ session_start();
       CURLOPT_FOLLOWLOCATION => true,
       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
       CURLOPT_CUSTOMREQUEST => 'POST',
-      CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
+      CURLOPT_POSTFIELDS => "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"$depDate\" dstApt=\"$depApt\" depApt=\"$dstApt\"/><flight depDate=\"$returnDate\" dstApt=\"$dstApt\" depApt=\"$depApt\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>",
       CURLOPT_HTTPHEADER => array(
         'accept: application/xml',
         'accept-encoding: gzip',
@@ -314,12 +316,22 @@ session_start();
         'accessid: gaura gaura',
         'authmode: pwd',
         'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
-        'content-Length: 494',
-        'Connection: close',
-        'Content-Type: text/plain'
+        'Content-Type: application/xml'
       ),
     ));
+
     $responseData = curl_exec($curl);
+
+    // Error handling
+    if (curl_errno($curl)) {
+      echo 'cURL Error: ' . curl_error($curl);
+    } else {
+      $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+      echo "HTTP Code: $httpCode\n";
+      var_dump($responseData);
+    }
+
+    curl_close($curl);
     $_SESSION['responseData'] = $responseData;
     // var_dump($_SESSION['responseData']);
     if ($responseData === false) {
