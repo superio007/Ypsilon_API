@@ -128,7 +128,7 @@ session_start();
 
 <body>
   <?php
-  $tripType ='';
+  $tripType = '';
   require 'api.php';
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tripType = $_POST['trip'] ?? '';
@@ -294,7 +294,8 @@ session_start();
     $type = "oneway";
 
     curl_close($curl);
-  } if ($tripType === "roundtrip") {
+  }
+  if ($tripType === "roundtrip") {
     $curl = curl_init();
     $depDate = $departureDate;
     $depApt = $departFrom;
@@ -588,24 +589,21 @@ session_start();
         </div>
         <div class="col-md-6 my-2">
           <!-- price list -->
-          <div><?php echo $type; ?></div>
+          <!-- <div><?php //echo $type; ?></div> -->
           <div class="row border rounded mb-2" style="background: #fff">
             <div class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Best</p>
-              <p class="m-0 fw-bold price">
-                ₹9,033 <i class="fa-solid fa-circle-info"></i>
+              <p class="m-0 fw-bold ">
+                <span id="cheapestPrice"></span> <i class="fa-solid fa-circle-info"></i>
               </p>
-              <p class="m-0">2h 15(average)</p>
             </div>
             <div class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Cheapest</p>
-              <p class="m-0 fw-bold price">₹8,865</p>
-              <p class="m-0">2h 10(average)</p>
+              <p class="m-0 fw-bold "><span id="averagePrice"></span></p>
             </div>
             <div class="priceList col-md-4 col-sm-4 p-2">
               <p class="m-0">Fastest</p>
-              <p class="m-0 fw-bold price">₹15,046</p>
-              <p class="m-0">2h 03(average)</p>
+              <p class="m-0 fw-bold "><span id="highestPrice"></span></p>
             </div>
           </div>
           <?php $index = 1;
@@ -958,6 +956,47 @@ session_start();
       });
     });
     document.addEventListener('DOMContentLoaded', function() {
+      // Get all elements with the class 'price'
+      const priceElements = document.querySelectorAll('.price');
+
+      // Initialize an array to store the prices
+      const prices = [];
+
+      // Loop through each element and extract the price
+      priceElements.forEach((priceElement) => {
+        const priceText = priceElement.textContent.trim(); // Get the text content
+        const priceValue = parseFloat(priceText.replace(/[^\d.]/g, '')); // Remove "AUD" and convert to a number
+
+        if (!isNaN(priceValue)) {
+          prices.push(priceValue); // Add the price to the array if it's valid
+        }
+      });
+
+      // Ensure there are prices to process
+      if (prices.length > 0) {
+        // Calculate the lowest price
+        const lowestPrice = Math.min(...prices);
+
+        // Calculate the highest price
+        const highestPrice = Math.max(...prices);
+
+        // Calculate the average price
+        const averagePrice =
+          prices.reduce((sum, price) => sum + price, 0) / prices.length;
+
+        // Update the respective span elements
+        document.getElementById('cheapestPrice').textContent = `₹ ${lowestPrice.toFixed(2)}`;
+        document.getElementById('highestPrice').textContent = `₹ ${highestPrice.toFixed(2)}`;
+        document.getElementById('averagePrice').textContent = `₹ ${averagePrice.toFixed(2)}`;
+
+        // Output the results in the console for debugging
+        console.log(`Lowest Price: ₹ ${lowestPrice.toFixed(2)}`);
+        console.log(`Highest Price: ₹ ${highestPrice.toFixed(2)}`);
+        console.log(`Average Price: ₹ ${averagePrice.toFixed(2)}`);
+      } else {
+        console.log('No prices found.');
+      }
+
       var studentFaresRadio = document.getElementById('studentFares');
       var previouslySelected = null;
 
