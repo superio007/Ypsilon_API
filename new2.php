@@ -128,6 +128,7 @@ session_start();
 
 <body>
   <?php
+  $tripType ='';
   require 'api.php';
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tripType = $_POST['trip'] ?? '';
@@ -141,6 +142,8 @@ session_start();
     $childrenCount = $_POST['children'] ?? 0;
     $infantsCount = $_POST['infants'] ?? 0;
     $total = (int)$adultsCount + (int)$childrenCount + (int)$infantsCount;
+
+    echo "Trip Type: $tripType, Fare Type: $fareType, Departure From: $departFrom, Flying To: $flyingTo, Departure Date: $departureDate, Return Date: $returnDate, Travel Class: $travelClass, Adults: $adultsCount, Children: $childrenCount, Infants: $infantsCount, Total: $total\n";
 
 
 
@@ -249,7 +252,7 @@ session_start();
     return "Tarif ID {$tarifId} not found.";
   }
   isset($_SESSION['formData']);
-  if (isset($_POST['trip']) == "oneway") {
+  if ($tripType === "oneway") {
     $curl = curl_init();
     $depDate = $departureDate;
     $depApt = $departFrom;
@@ -288,16 +291,17 @@ session_start();
 
     libxml_use_internal_errors(true);
     $fares = getFlightsWithLegs($responseData);
-    
+    $type = "oneway";
 
     curl_close($curl);
-  } elseif (isset($_POST['trip']) == "roundtrip") {
+  } if ($tripType === "roundtrip") {
     $curl = curl_init();
     $depDate = $departureDate;
     $depApt = $departFrom;
     $dstApt = $flyingTo;
     $returnDate = $returnDate;
-
+    $postfields = "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"$depDate\" dstApt=\"$depApt\" depApt=\"$dstApt\"/><flight depDate=\"$returnDate\" dstApt=\"$dstApt\" depApt=\"$depApt\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>";
+    // echo "<script>alert('$postfields');</script>";
     curl_setopt_array($curl, array(
       CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
       CURLOPT_RETURNTRANSFER => true,
@@ -307,7 +311,7 @@ session_start();
       CURLOPT_FOLLOWLOCATION => true,
       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
       CURLOPT_CUSTOMREQUEST => 'POST',
-      CURLOPT_POSTFIELDS => "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"$depDate\" dstApt=\"$depApt\" depApt=\"$dstApt\"/><flight depDate=\"$returnDate\" dstApt=\"$dstApt\" depApt=\"$depApt\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>",
+      CURLOPT_POSTFIELDS => $postfields,
       CURLOPT_HTTPHEADER => array(
         'accept: application/xml',
         'accept-encoding: gzip',
@@ -321,6 +325,7 @@ session_start();
     ));
 
     $responseData = curl_exec($curl);
+    $_SESSION['responseData'] = $responseData;
 
     // Error handling
     if (curl_errno($curl)) {
@@ -339,7 +344,7 @@ session_start();
       curl_close($curl);
       exit;
     }
-
+    $type = "roundtrip";
     libxml_use_internal_errors(true);
     $fares = getFlightsWithLegs($responseData);
   }
@@ -583,6 +588,7 @@ session_start();
         </div>
         <div class="col-md-6 my-2">
           <!-- price list -->
+          <div><?php echo $type; ?></div>
           <div class="row border rounded mb-2" style="background: #fff">
             <div class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Best</p>
@@ -669,7 +675,9 @@ session_start();
                 <div
                   class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
                   <p class="m-0 fw-bold text-center">Price p.p</p>
-                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;"><?php $farid = $id[0]['legId']; $tarifId =getFareIdFromLegId($farid,$responseData); echo getAdtSellByTarifId($tarifId,$responseData); ?></span></p>
+                  <p class="m-0 fw-bolder text-center">AUD <span class="price" style="font-weight: 700;"><?php $farid = $id[0]['legId'];
+                                                                                                          $tarifId = getFareIdFromLegId($farid, $responseData);
+                                                                                                          echo getAdtSellByTarifId($tarifId, $responseData); ?></span></p>
                   <button
                     class="btn book-button px-3"
                     style="background-color: #05203c; color: #fff">
