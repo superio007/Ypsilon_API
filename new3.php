@@ -123,6 +123,17 @@ session_start();
     .search-div button {
       font-size: 12px;
     }
+
+    .active-btn {
+      background-color: #05203c;
+      /* Dark background */
+      color: #fff;
+      /* White text */
+      border-radius: 5px;
+      /* Rounded corners */
+      font-weight: bold;
+      /* Bold text */
+    }
   </style>
 </head>
 
@@ -482,17 +493,6 @@ session_start();
                     value="240" />
                   <span id="outboundTime">04:00 - 23:59</span>
                 </div>
-                <div>
-                  <label for="returnSlider">Return</label>
-                  <input
-                    type="range"
-                    class="form-control-range"
-                    id="returnSlider"
-                    min="0"
-                    max="1440"
-                    value="0" />
-                  <span id="returnTime">00:00 - 23:59</span>
-                </div>
               </div>
             </div>
 
@@ -507,7 +507,7 @@ session_start();
                   class="form-control-range"
                   id="durationSlider"
                   min="0"
-                  max="10"
+                  max="24"
                   step="0.5"
                   value="2.5" />
                 <span id="durationTime">2.5 hours - 5.5 hours</span>
@@ -515,7 +515,7 @@ session_start();
             </div>
 
             <!-- Airlines -->
-            <div class="card">
+            <!-- <div class="card">
               <div
                 class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Airlines</h5>
@@ -584,7 +584,7 @@ session_start();
                     <small class="text-muted">from ₹8,865</small></label>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
         <div class="col-md-6 my-2">
@@ -647,62 +647,9 @@ session_start();
             ?>
 
             <!-- Render Flights from Array -->
-            <div class="container">
-              <?php foreach ($flightsArray as $flight): ?>
-                <div class="flight-div mb-2 border rounded">
-                  <div class="py-1 px-2 d-flex justify-content-between align-items-center">
-                    <p style="font-size: small; margin: 0; padding: 7px">
-                      This flight emits
-                      <span class="fw-bold"><?php echo $flight['co2Reduction']; ?></span> than a typical
-                      flight on this route <span><?php echo $flight['index']; ?></span>
-                    </p>
-                    <i class="fa-solid fa-circle-info fa-xs"></i>
-                  </div>
-                  <div style="display: flex; padding: 10px 0; background-color: #fff; border-bottom-right-radius: 7px; border-bottom-left-radius: 7px;">
-                    <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
-                      <?php foreach ($flight['images'] as $image): ?>
-                        <img src="<?php echo $image; ?>" alt="Airline Logo" />
-                      <?php endforeach; ?>
-                    </div>
-                    <div class="col-md-7 col-sm-7 border-end">
-                      <div class="d-grid">
-                        <?php foreach ($flight['legs'] as $leg): ?>
-                          <div class="d-flex align-items-center">
-                            <div class="col-md-4 col-sm-4 text-center pr-2">
-                              <p class="m-0 depTime"><?php echo $leg['depTime']; ?></p>
-                              <p class="fw-bold m-0 depApt"><?php echo $leg['depApt']; ?></p>
-                            </div>
-                            <div class="col-md-4 col-sm-4">
-                              <p class="m-0 text-center elapsed"><?php echo $leg['elapsed']; ?></p>
-                              <div class="d-flex">
-                                <p class="m-0">
-                                  --------<svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
-                                    <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
-                                  </svg>
-                                </p>
-                              </div>
-                              <p class="m-0 text-center" style="color: #48bddd">Direct</p>
-                            </div>
-                            <div class="col-md-4 col-sm-4 text-center pr-2">
-                              <p class="m-0 arrTime"><?php echo $leg['arrTime']; ?></p>
-                              <p class="fw-bold m-0 arrApt"><?php echo $leg['arrApt']; ?></p>
-                            </div>
-                          </div>
-                        <?php endforeach; ?>
-                      </div>
-                    </div>
-                    <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
-                      <p class="m-0 fw-bold text-center">Price p.p</p>
-                      <p class="m-0 fw-bolder text-center">AUD <span class="price" style="font-weight: 700;"><?php echo $flight['price']; ?></span></p>
-                      <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">
-                        Select <i class="fa-solid fa-arrow-right"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              <?php endforeach; ?>
-            </div>
+            <div id="flight-container">
 
+            </div>
             <?php $index++; ?>
           <?php endforeach; ?>
         </div>
@@ -960,8 +907,6 @@ session_start();
       } else if ($('#roundTrip').is(':checked')) {
         $('#returnDate').prop('disabled', false);
       }
-    });
-    $(document).ready(function() {
       $(document).on('click', '.price-breakdown', function() {
         var index = $(this).data('index');
         var content = $('#price-breakdown-' + index);
@@ -973,7 +918,181 @@ session_start();
           $(this).text('+ DISPLAY PRICE BREAKDOWN');
         }
       });
+      // Global variables
+      let flightsArray = [];
+      let cheapestPrice = 0;
+      let averagePrice = 0;
+      let highestPrice = 0;
+
+      // Helper function to convert HH:mm to total minutes
+      function timeToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+      }
+
+      // Helper function to convert minutes to HH:mm format
+      function minutesToTime(minutes) {
+        const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
+        const mins = String(minutes % 60).padStart(2, '0');
+        return `${hours}:${mins}`;
+      }
+      $('#durationSlider').on('input', function() {
+        const minDuration = parseFloat($(this).val());
+        const maxDuration = 10; // Maximum value from slider
+
+        // Update displayed duration range
+        $('#durationTime').text(`${minDuration.toFixed(1)} hours - ${maxDuration.toFixed(1)} hours`);
+
+        // Filter flights based on elapsed time
+        const filteredFlights = flightsArray.filter((flight) =>
+          flight.legs.some((leg) => {
+            const elapsedHours = parseFloat(leg.elapsed);
+            return elapsedHours >= minDuration && elapsedHours <= maxDuration;
+          })
+        );
+
+        // Render the filtered flights
+        renderFlights(filteredFlights);
+      });
+
+      // Function to render flights
+      function renderFlights(filteredFlights) {
+        const container = $('#flight-container');
+        container.empty();
+
+        filteredFlights.forEach((flight) => {
+          const flightDiv = `
+          <div class="flight-div mb-2 border rounded">
+            <div class="py-1 px-2 d-flex justify-content-between align-items-center">
+              <p style="font-size: small; margin: 0; padding: 7px">
+                This flight emits
+                <span class="fw-bold">${flight.co2Reduction}</span> than a typical
+                flight on this route <span>${flight.index}</span>
+              </p>
+              <i class="fa-solid fa-circle-info fa-xs"></i>
+            </div>
+            <div style="display: flex; padding: 10px 0; background-color: #fff; border-bottom-right-radius: 7px; border-bottom-left-radius: 7px;">
+              <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
+                ${flight.images.map((image) => `<img src="${image}" alt="Airline Logo" />`).join('')}
+              </div>
+              <div class="col-md-7 col-sm-7 border-end">
+                <div class="d-grid">
+                  ${flight.legs.map((leg) => `
+                    <div class="d-flex align-items-center">
+                      <div class="col-md-4 col-sm-4 text-center pr-2">
+                        <p class="m-0 depTime">${leg.depTime}</p>
+                        <p class="fw-bold m-0 depApt">${leg.depApt}</p>
+                      </div>
+                      <div class="col-md-4 col-sm-4">
+                        <p class="m-0 text-center elapsed">${leg.elapsed}</p>
+                        <p class="m-0 text-center" style="color: #48bddd">Direct</p>
+                      </div>
+                      <div class="col-md-4 col-sm-4 text-center pr-2">
+                        <p class="m-0 arrTime">${leg.arrTime}</p>
+                        <p class="fw-bold m-0 arrApt">${leg.arrApt}</p>
+                      </div>
+                    </div>`).join('')}
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
+                <p class="m-0 fw-bold text-center">Price p.p</p>
+                <p class="m-0 fw-bolder text-center">AUD <span class="price" style="font-weight: 700;">${flight.price}</span></p>
+                <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">
+                  Select <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>`;
+          container.append(flightDiv);
+        });
+      }
+
+      // Event listener for slider
+      $('#outboundSlider').on('input', function() {
+        const sliderValue = $(this).val(); // Slider value in minutes
+        const startTime = minutesToTime(sliderValue);
+        const endTime = minutesToTime(1440); // End of the day
+
+        // Update displayed time range
+        $('#outboundTime').text(`${startTime} - ${endTime}`);
+
+        // Filter flights based on depTime
+        const filteredFlights = flightsArray.filter((flight) =>
+          flight.legs.some((leg) => {
+            const depMinutes = timeToMinutes(leg.depTime);
+            return depMinutes >= sliderValue && depMinutes <= 1440; // Between slider value and end of the day
+          })
+        );
+
+        // Render filtered flights
+        renderFlights(filteredFlights);
+      });
+
+      // Function to load flights and initialize slider
+      function LoadFlightDiv() {
+        flightsArray = <?php echo json_encode($flightsArray); ?>;
+
+        if (!flightsArray || flightsArray.length === 0) {
+          console.error('No flights found.');
+          return;
+        }
+
+        // Calculate prices
+        const prices = flightsArray.map((flight) => parseFloat(flight.price));
+        cheapestPrice = Math.min(...prices);
+        highestPrice = Math.max(...prices);
+        averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+        // Render all flights initially
+        renderFlights(flightsArray);
+
+        // Display calculated prices in the UI
+        $('#cheapestPrice').text(`₹ ${cheapestPrice.toFixed(2)}`);
+        $('#highestPrice').text(`₹ ${highestPrice.toFixed(2)}`);
+        $('#averagePrice').text(`₹ ${averagePrice.toFixed(2)}`);
+      }
+      // Event listeners for filtering
+      // Add event listener for "Cheapest"
+      $('#cheapest').on('click', function() {
+        const filteredFlights = flightsArray.filter(
+          (flight) => flight.price >= cheapestPrice && flight.price <= averagePrice
+        );
+        renderFlights(filteredFlights);
+        setActiveButton($(this)); // Highlight the clicked button
+      });
+
+      // Add event listener for "Average"
+      $('#average').on('click', function() {
+        const filteredFlights = flightsArray.filter(
+          (flight) => flight.price >= cheapestPrice && flight.price <= averagePrice
+        );
+        renderFlights(filteredFlights);
+        setActiveButton($(this)); // Highlight the clicked button
+      });
+
+      // Add event listener for "Highest"
+      $('#highest').on('click', function() {
+        const filteredFlights = flightsArray.filter(
+          (flight) => flight.price > averagePrice && flight.price <= highestPrice
+        );
+        renderFlights(filteredFlights);
+        setActiveButton($(this)); // Highlight the clicked button
+      });
+
+      // Function to set the active button
+      function setActiveButton(button) {
+        // Remove the active class from all buttons
+        $('#cheapest, #average, #highest').removeClass('active-btn');
+
+        // Add the active class to the clicked button
+        button.addClass('active-btn');
+      }
+
+
+      // Initialize flights on page load
+      LoadFlightDiv();
     });
+
     document.addEventListener('DOMContentLoaded', function() {
       // Get all elements with the class 'price'
       const priceElements = document.querySelectorAll('.price');

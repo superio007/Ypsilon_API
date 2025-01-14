@@ -1,57 +1,49 @@
-<availresponse xmlns:shared="http://ypsilon.net/shared" cnttarifs="29" offset="0">
+<availresponse xmlns:shared="http://ypsilon.net/shared" cnttarifs="5" offset="0">
     <fares>
-        <fare fareid="703132578" shared:faretype="UNI" class="Y" depapt="DEL" dstapt="MEL" paxtype="ADT" shared:vcr="SQ" cos="E" yyfare="false" tickettimelimit="2025-01-13" date="2025-01-15" dfcconso="gaurainn" dfcagent="gaurainn">
+        <fare fareid="1285510448" shared:faretype="UNI" class="Y" depapt="DEL" dstapt="MEL" paxtype="ADT" shared:vcr="SQ" cos="E" yyfare="false" tickettimelimit="2025-01-14" date="2025-01-16" dfcconso="gaurainn" dfcagent="gaurainn">
             <farebases>
                 <farebase shared:pax="ADT">Y12IIRB1</farebase>
                 <farebase shared:pax="CHD">Y12IIRB1</farebase>
                 <farebase shared:pax="INF">Y12IIRB1</farebase>
             </farebases>
         </fare>
-        <fare fareid="703132579" shared:faretype="UNI" class="H" depapt="DEL" dstapt="MEL" paxtype="ADT" shared:vcr="SQ" cos="E" yyfare="false" tickettimelimit="2025-01-13" date="2025-01-18" dfcconso="gaurainn" dfcagent="gaurainn">
+        <fare fareid="1285510449" shared:faretype="UNI" class="B" depapt="DEL" dstapt="MEL" paxtype="ADT" shared:vcr="SQ" cos="E" yyfare="false" tickettimelimit="2025-01-14" date="2025-01-20" dfcconso="gaurainn" dfcagent="gaurainn">
             <farebases>
-                <farebase shared:pax="ADT">H14IIRB1</farebase>
-                <farebase shared:pax="CHD">H14IIRB1</farebase>
-                <farebase shared:pax="INF">H14IIRB1</farebase>
+                <farebase shared:pax="ADT">B12IIRB1</farebase>
+                <farebase shared:pax="CHD">B12IIRB1</farebase>
+                <farebase shared:pax="INF">B12IIRB1</farebase>
             </farebases>
         </fare>
     </fares>
     <tarifs shared:currency="AUD">
-        <tarif tarifid="703132578_703132579" adtbuy="2513.97" adtsell="2593.97" chdbuy="2513.97" chdsell="2593.97" infbuy="2513.97" infsell="2513.97" adttax="303.70" chdtax="303.70" inftax="303.70" origin="MASTERPRICER-NDC" taxmode="EXCL" topcar="false" tophotel="false" powerpricerdisplay="sell">
+        <tarif tarifid="1285510448_1285510449" adtbuy="2513.28" adtsell="2593.28" chdbuy="2513.28" chdsell="2593.28" infbuy="2513.28" infsell="2513.28" adttax="304.09" chdtax="304.09" inftax="304.09" origin="MASTERPRICER-NDC" taxmode="EXCL" topcar="false" tophotel="false" powerpricerdisplay="sell">
             <farexrefs>
-                <farexref fareid="703132578">
+                <farexref fareid="1285510448">
                     <flights>
-                        <flight flightid="297770593" addadtprice="0.0" addchdprice="0.0" addinfprice="0.0">
+                        <flight flightid="317782097" addadtprice="0.0" addchdprice="0.0" addinfprice="0.0">
                             <legxrefs>
-                                <legxref legxrefid="53993400240" legid="1996094183" class="Y" cos="E" cosdescription="ECONOMY" farebaseadt="Y12IIRB1">
-                                    <legxref legxrefid="53993400241" legid="1996094184" class="Y" cos="E" cosdescription="ECONOMY" farebaseadt="Y12IIRB1">
-                                    </legxref>
-                                </legxref>
-                            </legxrefs>
-                        </flight>
-                        <flight flightid="297770594" addadtprice="0.0" addchdprice="0.0" addinfprice="0.0">
-                            <legxrefs>
-                                <legxref legxrefid="53993400242" legid="1996094185" class="Y" cos="E" cosdescription="ECONOMY" farebaseadt="Y12IIRB1">
-                                    <legxref legxrefid="53993400243" legid="1996094186" class="Y" cos="E" cosdescription="ECONOMY" farebaseadt="Y12IIRB1">
+                                <legxref legxrefid="100168221841" legid="173298471" class="Y" cos="E" cosdescription="ECONOMY" farebaseadt="Y12IIRB1">
+                                    <legxref legxrefid="100168221842" legid="173298472" class="Y" cos="E" cosdescription="ECONOMY" farebaseadt="Y12IIRB1">
                                     </legxref>
                                 </legxref>
                             </legxrefs>
                         </flight>
                     </flights>
                 </farexref>
-                <farexref fareid="703132579">
+                <farexref fareid="1285510449">
                     <flights>
-                        <flight flightid="297770595" addadtprice="0.0" addchdprice="0.0" addinfprice="0.0">
+                        <flight flightid="317782098" addadtprice="0.0" addchdprice="0.0" addinfprice="0.0">
                             <legxrefs>
-                                <legxref legxrefid="53993400244" legid="1996094187" class="H" cos="E" cosdescription="ECONOMY" farebaseadt="H14IIRB1">
-                                    <legxref legxrefid="53993400245" legid="1996094188" class="H" cos="E" cosdescription="ECONOMY" farebaseadt="H14IIRB1">
+                                <legxref legxrefid="100168221843" legid="173298473" class="B" cos="E" cosdescription="ECONOMY" farebaseadt="B12IIRB1">
+                                    <legxref legxrefid="100168221844" legid="173298474" class="B" cos="E" cosdescription="ECONOMY" farebaseadt="B12IIRB1">
                                     </legxref>
                                 </legxref>
                             </legxrefs>
                         </flight>
-                        <flight flightid="297770596" addadtprice="0.0" addchdprice="0.0" addinfprice="0.0">
+                        <flight flightid="317782099" addadtprice="0.0" addchdprice="0.0" addinfprice="0.0">
                             <legxrefs>
-                                <legxref legxrefid="53993400246" legid="1996094189" class="H" cos="E" cosdescription="ECONOMY" farebaseadt="H14IIRB1">
-                                    <legxref legxrefid="53993400247" legid="1996094190" class="H" cos="E" cosdescription="ECONOMY" farebaseadt="H14IIRB1">
+                                <legxref legxrefid="100168221845" legid="173298475" class="B" cos="E" cosdescription="ECONOMY" farebaseadt="B12IIRB1">
+                                    <legxref legxrefid="100168221846" legid="173298476" class="B" cos="E" cosdescription="ECONOMY" farebaseadt="B12IIRB1">
                                     </legxref>
                                 </legxref>
                             </legxrefs>
@@ -62,16 +54,12 @@
         </tarif>
     </tarifs>
     <legs>
-        <leg legid="1996094183" depapt="DEL" depdate="2025-01-15" deptime="22:00" dstapt="SIN" depterm="3" arrterm="0" arrdate="2025-01-16" arrtime="06:10" equip="787" fno="405" shared:cr="SQ" miles="2586" elapsed="5.17" meals="0" smoker="false" stops="0" eticket="false">
-            <leg legid="1996094184" depapt="SIN" depdate="2025-01-16" deptime="11:00" dstapt="MEL" depterm="3" arrterm="2" arrdate="2025-01-16" arrtime="21:25" equip="359" fno="217" shared:cr="SQ" miles="3755" elapsed="7.42" meals="0" smoker="false" stops="0" eticket="false">
-                <leg legid="1996094185" depapt="DEL" depdate="2025-01-15" deptime="21:50" dstapt="SIN" depterm="3" arrterm="0" arrdate="2025-01-16" arrtime="06:00" equip="77W" fno="403" shared:cr="SQ" miles="2586" elapsed="5.17" meals="0" smoker="false" stops="0" eticket="false">
-                    <leg legid="1996094186" depapt="SIN" depdate="2025-01-16" deptime="11:00" dstapt="MEL" depterm="3" arrterm="2" arrdate="2025-01-16" arrtime="21:25" equip="359" fno="217" shared:cr="SQ" miles="3755" elapsed="7.42" meals="0" smoker="false" stops="0" eticket="false">
-                        <leg legid="1996094187" depapt="MEL" depdate="2025-01-18" deptime="10:35" dstapt="SIN" depterm="2" arrterm="0" arrdate="2025-01-18" arrtime="15:15" equip="77W" fno="238" shared:cr="SQ" miles="3755" elapsed="7.67" meals="0" smoker="false" stops="0" eticket="false">
-                            <leg legid="1996094188" depapt="SIN" depdate="2025-01-18" deptime="17:25" dstapt="DEL" depterm="3" arrterm="3" arrdate="2025-01-18" arrtime="20:40" equip="787" fno="404" shared:cr="SQ" miles="2586" elapsed="6.25" meals="0" smoker="false" stops="0" eticket="false">
-                                <leg legid="1996094189" depapt="MEL" depdate="2025-01-18" deptime="06:55" dstapt="SIN" depterm="2" arrterm="0" arrdate="2025-01-18" arrtime="11:35" equip="359" fno="248" shared:cr="SQ" miles="3755" elapsed="7.67" meals="0" smoker="false" stops="0" eticket="false">
-                                    <leg legid="1996094190" depapt="SIN" depdate="2025-01-18" deptime="17:25" dstapt="DEL" depterm="3" arrterm="3" arrdate="2025-01-18" arrtime="20:40" equip="787" fno="404" shared:cr="SQ" miles="2586" elapsed="6.25" meals="0" smoker="false" stops="0" eticket="false">
-                                    </leg>
-                                </leg>
+        <leg legid="173298471" depapt="DEL" depdate="2025-01-16" deptime="09:45" dstapt="SIN" depterm="3" arrterm="0" arrdate="2025-01-16" arrtime="18:00" equip="787" fno="401" shared:cr="SQ" miles="2586" elapsed="5.25" meals="0" smoker="false" stops="0" eticket="false">
+            <leg legid="173298472" depapt="SIN" depdate="2025-01-17" deptime="00:25" dstapt="MEL" depterm="3" arrterm="2" arrdate="2025-01-17" arrtime="10:50" equip="77W" fno="237" shared:cr="SQ" miles="3755" elapsed="7.42" meals="0" smoker="false" stops="0" eticket="false">
+                <leg legid="173298473" depapt="MEL" depdate="2025-01-20" deptime="10:35" dstapt="SIN" depterm="2" arrterm="0" arrdate="2025-01-20" arrtime="15:15" equip="77W" fno="238" shared:cr="SQ" miles="3755" elapsed="7.67" meals="0" smoker="false" stops="0" eticket="false">
+                    <leg legid="173298474" depapt="SIN" depdate="2025-01-21" deptime="02:25" dstapt="DEL" depterm="3" arrterm="3" arrdate="2025-01-21" arrtime="05:40" equip="787" fno="402" shared:cr="SQ" miles="2586" elapsed="6.25" meals="0" smoker="false" stops="0" eticket="false">
+                        <leg legid="173298475" depapt="MEL" depdate="2025-01-20" deptime="06:55" dstapt="SIN" depterm="2" arrterm="0" arrdate="2025-01-20" arrtime="11:35" equip="359" fno="248" shared:cr="SQ" miles="3755" elapsed="7.67" meals="0" smoker="false" stops="0" eticket="false">
+                            <leg legid="173298476" depapt="SIN" depdate="2025-01-21" deptime="02:25" dstapt="DEL" depterm="3" arrterm="3" arrdate="2025-01-21" arrtime="05:40" equip="787" fno="402" shared:cr="SQ" miles="2586" elapsed="6.25" meals="0" smoker="false" stops="0" eticket="false">
                             </leg>
                         </leg>
                     </leg>
@@ -80,10 +68,10 @@
         </leg>
     </legs>
     <taxes shared:currency="AUD">
-        <tax shared:vcr="SQ" shared:faretype="UNI">248.27</tax>
+        <tax shared:vcr="SQ" shared:faretype="UNI">234.79</tax>
     </taxes>
     <advtaxes shared:currency="AUD">
-        <advtax shared:vcr="SQ" routing="SQ_DELSIN0:SQ_SINMEL1:SQ_MELSIN0:SQ_SINDEL0" adtprice="18335.0" adtexceptions="Y12IIRB1:Y12IIRB1:H14IIRB1:H14IIRB1=16169.0">
+        <advtax shared:vcr="SQ" routing="SQ_DELSIN0:SQ_SINMEL1:SQ_MELSIN0:SQ_SINDEL0" adtprice="16107.0" adtexceptions="Y12IIRB1:Y12IIRB1:B12IIRB1:B12IIRB1=16901.0">
         </advtax>
     </advtaxes>
     <shared:specialservices>
@@ -96,13 +84,11 @@
         </servicegroup>
     </shared:specialservices>
     <servicemappings>
-        <map elemtype="legXRef" elemid="53993400240" servicegroup="baggage" serviceid="FBA_1"></map>
-        <map elemtype="legXRef" elemid="53993400241" servicegroup="baggage" serviceid="FBA_1"></map>
-        <map elemtype="legXRef" elemid="53993400242" servicegroup="baggage" serviceid="FBA_1"></map>
-        <map elemtype="legXRef" elemid="53993400243" servicegroup="baggage" serviceid="FBA_1"></map>
-        <map elemtype="legXRef" elemid="53993400244" servicegroup="baggage" serviceid="FBA_1"></map>
-        <map elemtype="legXRef" elemid="53993400245" servicegroup="baggage" serviceid="FBA_1"></map>
-        <map elemtype="legXRef" elemid="53993400246" servicegroup="baggage" serviceid="FBA_1"></map>
-        <map elemtype="legXRef" elemid="53993400247" servicegroup="baggage" serviceid="FBA_1"></map>
+        <map elemtype="legXRef" elemid="100168221841" servicegroup="baggage" serviceid="FBA_1"></map>
+        <map elemtype="legXRef" elemid="100168221842" servicegroup="baggage" serviceid="FBA_1"></map>
+        <map elemtype="legXRef" elemid="100168221843" servicegroup="baggage" serviceid="FBA_1"></map>
+        <map elemtype="legXRef" elemid="100168221844" servicegroup="baggage" serviceid="FBA_1"></map>
+        <map elemtype="legXRef" elemid="100168221845" servicegroup="baggage" serviceid="FBA_1"></map>
+        <map elemtype="legXRef" elemid="100168221846" servicegroup="baggage" serviceid="FBA_1"></map>
     </servicemappings>
 </availresponse>
