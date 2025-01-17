@@ -128,7 +128,6 @@ session_start();
 
 <body>
   <?php
-  $tripType = '';
   require 'api.php';
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tripType = $_POST['trip'] ?? '';
@@ -142,8 +141,6 @@ session_start();
     $childrenCount = $_POST['children'] ?? 0;
     $infantsCount = $_POST['infants'] ?? 0;
     $total = (int)$adultsCount + (int)$childrenCount + (int)$infantsCount;
-
-    echo "Trip Type: $tripType, Fare Type: $fareType, Departure From: $departFrom, Flying To: $flyingTo, Departure Date: $departureDate, Return Date: $returnDate, Travel Class: $travelClass, Adults: $adultsCount, Children: $childrenCount, Infants: $infantsCount, Total: $total\n";
 
 
 
@@ -252,7 +249,7 @@ session_start();
     return "Tarif ID {$tarifId} not found.";
   }
   isset($_SESSION['formData']);
-  if ($tripType === "oneway") {
+  if (isset($_POST['trip']) == "oneway") {
     $curl = curl_init();
     $depDate = $departureDate;
     $depApt = $departFrom;
@@ -291,18 +288,14 @@ session_start();
 
     libxml_use_internal_errors(true);
     $fares = getFlightsWithLegs($responseData);
-    $type = "oneway";
+
 
     curl_close($curl);
-  }
-  if ($tripType === "roundtrip") {
+  } elseif (isset($_POST['trip']) == "roundtrip") {
     $curl = curl_init();
     $depDate = $departureDate;
     $depApt = $departFrom;
     $dstApt = $flyingTo;
-    $returnDate = $returnDate;
-    $postfields = "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"$depDate\" dstApt=\"$depApt\" depApt=\"$dstApt\"/><flight depDate=\"$returnDate\" dstApt=\"$dstApt\" depApt=\"$depApt\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>";
-    // echo "<script>alert('$postfields');</script>";
     curl_setopt_array($curl, array(
       CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
       CURLOPT_RETURNTRANSFER => true,
@@ -312,7 +305,7 @@ session_start();
       CURLOPT_FOLLOWLOCATION => true,
       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
       CURLOPT_CUSTOMREQUEST => 'POST',
-      CURLOPT_POSTFIELDS => $postfields,
+      CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
       CURLOPT_HTTPHEADER => array(
         'accept: application/xml',
         'accept-encoding: gzip',
@@ -321,23 +314,12 @@ session_start();
         'accessid: gaura gaura',
         'authmode: pwd',
         'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
-        'Content-Type: application/xml'
+        'content-Length: 494',
+        'Connection: close',
+        'Content-Type: text/plain'
       ),
     ));
-
     $responseData = curl_exec($curl);
-    $_SESSION['responseData'] = $responseData;
-
-    // Error handling
-    if (curl_errno($curl)) {
-      echo 'cURL Error: ' . curl_error($curl);
-    } else {
-      $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-      echo "HTTP Code: $httpCode\n";
-      var_dump($responseData);
-    }
-
-    curl_close($curl);
     $_SESSION['responseData'] = $responseData;
     // var_dump($_SESSION['responseData']);
     if ($responseData === false) {
@@ -345,7 +327,7 @@ session_start();
       curl_close($curl);
       exit;
     }
-    $type = "roundtrip";
+
     libxml_use_internal_errors(true);
     $fares = getFlightsWithLegs($responseData);
   }
@@ -590,119 +572,102 @@ session_start();
         <div class="col-md-6 my-2">
           <!-- price list -->
           <div class="row border rounded mb-2" style="background: #fff">
-            <div id="cheapest" class="priceList col-md-4 col-sm-4 border-end p-2">
+            <div class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Best</p>
-              <p class="m-0 fw-bold ">
-                <span id="cheapestPrice"></span> <i class="fa-solid fa-circle-info"></i>
+              <p class="m-0 fw-bold price">
+                ₹9,033 <i class="fa-solid fa-circle-info"></i>
               </p>
+              <p class="m-0">2h 15(average)</p>
             </div>
-            <div id="average" class="priceList col-md-4 col-sm-4 border-end p-2">
+            <div class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Cheapest</p>
-              <p class="m-0 fw-bold "><span id="averagePrice"></span></p>
+              <p class="m-0 fw-bold price">₹8,865</p>
+              <p class="m-0">2h 10(average)</p>
             </div>
-            <div id="highest" class="priceList col-md-4 col-sm-4 p-2">
+            <div class="priceList col-md-4 col-sm-4 p-2">
               <p class="m-0">Fastest</p>
-              <p class="m-0 fw-bold "><span id="highestPrice"></span></p>
+              <p class="m-0 fw-bold price">₹15,046</p>
+              <p class="m-0">2h 03(average)</p>
             </div>
           </div>
           <?php $index = 1;
           foreach ($fares as $id): ?>
             <!-- flight div -->
-            <?php
-            // Create an array to store all flight details
-            $flightsArray = [];
-
-            $index = 1; // Initialize flight index
-            foreach ($fares as $id) {
-              // Prepare data for each flight
-              $flightDetails = [
-                'co2Reduction' => '19% less CO2e', // Static example, adjust as needed
-                'index' => $index,
-                'images' => ['newUi/images/Alsaka air.png', 'newUi/images/indigo.png'], // Example airline logos
-                'legs' => [],
-                'price' => null,
-              ];
-
-              // Loop through legs to extract details
-              foreach ($id as $legs) {
-                $flightDetails['legs'][] = [
-                  'depTime' => $legs['depTime'],
-                  'depApt' => $legs['depApt'],
-                  'elapsed' => $legs['elapsed'],
-                  'arrTime' => $legs['arrTime'],
-                  'arrApt' => $legs['dstApt'],
-                ];
-              }
-
-              // Get the price for the flight
-              $farid = $id[0]['legId'];
-              $tarifId = getFareIdFromLegId($farid, $responseData);
-              $flightDetails['price'] = getAdtSellByTarifId($tarifId, $responseData);
-
-              // Add the flight details to the array
-              $flightsArray[] = $flightDetails;
-
-              $index++;
-            }
-            ?>
-
-            <!-- Render Flights from Array -->
-            <div class="container">
-              <?php foreach ($flightsArray as $flight): ?>
-                <div class="flight-div mb-2 border rounded">
-                  <div class="py-1 px-2 d-flex justify-content-between align-items-center">
-                    <p style="font-size: small; margin: 0; padding: 7px">
-                      This flight emits
-                      <span class="fw-bold"><?php echo $flight['co2Reduction']; ?></span> than a typical
-                      flight on this route <span><?php echo $flight['index']; ?></span>
-                    </p>
-                    <i class="fa-solid fa-circle-info fa-xs"></i>
-                  </div>
-                  <div style="display: flex; padding: 10px 0; background-color: #fff; border-bottom-right-radius: 7px; border-bottom-left-radius: 7px;">
-                    <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
-                      <?php foreach ($flight['images'] as $image): ?>
-                        <img src="<?php echo $image; ?>" alt="Airline Logo" />
-                      <?php endforeach; ?>
-                    </div>
-                    <div class="col-md-7 col-sm-7 border-end">
-                      <div class="d-grid">
-                        <?php foreach ($flight['legs'] as $leg): ?>
-                          <div class="d-flex align-items-center">
-                            <div class="col-md-4 col-sm-4 text-center pr-2">
-                              <p class="m-0 depTime"><?php echo $leg['depTime']; ?></p>
-                              <p class="fw-bold m-0 depApt"><?php echo $leg['depApt']; ?></p>
-                            </div>
-                            <div class="col-md-4 col-sm-4">
-                              <p class="m-0 text-center elapsed"><?php echo $leg['elapsed']; ?></p>
-                              <div class="d-flex">
-                                <p class="m-0">
-                                  --------<svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
-                                    <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
-                                  </svg>
-                                </p>
-                              </div>
-                              <p class="m-0 text-center" style="color: #48bddd">Direct</p>
-                            </div>
-                            <div class="col-md-4 col-sm-4 text-center pr-2">
-                              <p class="m-0 arrTime"><?php echo $leg['arrTime']; ?></p>
-                              <p class="fw-bold m-0 arrApt"><?php echo $leg['arrApt']; ?></p>
-                            </div>
+            <div class="flight-div mb-2 border rounded">
+              <div
+                class="py-1 px-2 d-flex justify-content-between align-items-center">
+                <p style="font-size: small; margin: 0; padding: 7px">
+                  This flight emits
+                  <span class="fw-bold">19% less CO2e</span> than a typical
+                  flight on this route <span><?php echo $index; ?></span>
+                </p>
+                <i class="fa-solid fa-circle-info fa-xs"></i>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  padding: 10px 0;
+                  background-color: #fff;
+                  border-bottom-right-radius: 7px;
+                  border-bottom-left-radius: 7px;
+                ">
+                <div
+                  class="col-md-2 col-sm-2 gap-3" style="display: grid;">
+                  <img src="newUi/images/Alsaka air.png" alt="" />
+                  <img src="newUi/images/indigo.png" alt="" />
+                </div>
+                <div class="col-md-7 col-sm-7 border-end">
+                  <div class="d-grid">
+                    <?php
+                    foreach ($id as $key => $legs):
+                    ?>
+                      <div class="d-flex align-items-center">
+                        <div class="col-md-4 col-sm-4 text-center pr-2">
+                          <p class="m-0"><?php echo $legs['depTime']; ?></p>
+                          <p class="fw-bold m-0"><?php echo $legs['depApt']; ?></p>
+                        </div>
+                        <div class="col-md-4 col-sm-4">
+                          <p class="m-0 text-center"><?php echo $legs['elapsed']; ?></p>
+                          <div class="d-flex">
+                            <p class="m-0">
+                              --------<svg
+                                style="width: 12px"
+                                xmlns="http://www.w3.org/2000/svg"
+                                xml:space="preserve"
+                                viewBox="0 0 12 12"
+                                class="LegInfo_planeEnd__ZGU5M">
+                                <path
+                                  fill="#898294"
+                                  d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
+                              </svg>
+                            </p>
                           </div>
-                        <?php endforeach; ?>
+                          <p class="m-0 text-center" style="color: #48bddd">
+                            Direct
+                          </p>
+                        </div>
+                        <div class="col-md-4 col-sm-4 text-center pr-2">
+                          <p class="m-0"><?php echo $legs['arrTime']; ?></p>
+                          <p class="fw-bold m-0"><?php echo $legs['dstApt']; ?></p>
+                        </div>
                       </div>
-                    </div>
-                    <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
-                      <p class="m-0 fw-bold text-center">Price p.p</p>
-                      <p class="m-0 fw-bolder text-center">AUD <span class="price" style="font-weight: 700;"><?php echo $flight['price']; ?></span></p>
-                      <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">
-                        Select <i class="fa-solid fa-arrow-right"></i>
-                      </button>
-                    </div>
+                    <?php endforeach; ?>
                   </div>
                 </div>
-              <?php endforeach; ?>
+                <div
+                  class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
+                  <p class="m-0 fw-bold text-center">Price p.p</p>
+                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;"><?php $farid = $id[0]['legId'];
+                                                                                            $tarifId = getFareIdFromLegId($farid, $responseData);
+                                                                                            echo getAdtSellByTarifId($tarifId, $responseData); ?></span></p>
+                  <button
+                    class="btn book-button px-3"
+                    style="background-color: #05203c; color: #fff">
+                    Select <i class="fa-solid fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
             </div>
-
             <?php $index++; ?>
           <?php endforeach; ?>
         </div>
@@ -975,47 +940,6 @@ session_start();
       });
     });
     document.addEventListener('DOMContentLoaded', function() {
-      // Get all elements with the class 'price'
-      const priceElements = document.querySelectorAll('.price');
-
-      // Initialize an array to store the prices
-      const prices = [];
-
-      // Loop through each element and extract the price
-      priceElements.forEach((priceElement) => {
-        const priceText = priceElement.textContent.trim(); // Get the text content
-        const priceValue = parseFloat(priceText.replace(/[^\d.]/g, '')); // Remove "AUD" and convert to a number
-
-        if (!isNaN(priceValue)) {
-          prices.push(priceValue); // Add the price to the array if it's valid
-        }
-      });
-
-      // Ensure there are prices to process
-      if (prices.length > 0) {
-        // Calculate the lowest price
-        const lowestPrice = Math.min(...prices);
-
-        // Calculate the highest price
-        const highestPrice = Math.max(...prices);
-
-        // Calculate the average price
-        const averagePrice =
-          prices.reduce((sum, price) => sum + price, 0) / prices.length;
-
-        // Update the respective span elements
-        document.getElementById('cheapestPrice').textContent = `₹ ${lowestPrice.toFixed(2)}`;
-        document.getElementById('highestPrice').textContent = `₹ ${highestPrice.toFixed(2)}`;
-        document.getElementById('averagePrice').textContent = `₹ ${averagePrice.toFixed(2)}`;
-
-        // Output the results in the console for debugging
-        console.log(`Lowest Price: ₹ ${lowestPrice.toFixed(2)}`);
-        console.log(`Highest Price: ₹ ${highestPrice.toFixed(2)}`);
-        console.log(`Average Price: ₹ ${averagePrice.toFixed(2)}`);
-      } else {
-        console.log('No prices found.');
-      }
-
       var studentFaresRadio = document.getElementById('studentFares');
       var previouslySelected = null;
 
