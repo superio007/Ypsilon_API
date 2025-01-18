@@ -974,6 +974,43 @@ session_start();
     });
     document.addEventListener('DOMContentLoaded', function() {
       const container = document.getElementById("flightResults");
+      const outboundSlider = document.getElementById("outboundSlider");
+      const durationSlider = document.getElementById("durationSlider");
+      const outboundTime = document.getElementById("outboundTime");
+      const durationTime = document.getElementById("durationTime");
+
+      // Function to convert minutes to HH:MM format
+      function formatTime(minutes) {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+      }
+
+      // Function to filter flights based on sliders
+      function filterFlights() {
+        const outboundValue = parseInt(outboundSlider.value, 10);
+        const durationValue = parseFloat(durationSlider.value);
+
+        // Update slider labels
+        outboundTime.textContent = `${formatTime(outboundValue)} - 23:59`;
+        durationTime.textContent = `${durationValue} hours - 24 hours`;
+
+        // Filter flights
+        const filteredFlights = flightsData.filter((flight) => {
+          const legs = flight.legs[0]; // Assuming first leg for outbound and duration
+          const depTime = legs[0]?.depTime || "00:00";
+          const elapsed = parseFloat(legs[0]?.elapsed) || 0;
+
+          // Convert depTime (HH:MM) to minutes
+          const [depHour, depMinute] = depTime.split(":").map(Number);
+          const depTimeInMinutes = depHour * 60 + depMinute;
+
+          return depTimeInMinutes >= outboundValue && elapsed <= durationValue;
+        });
+
+        // Render filtered flights
+        renderFlights(filteredFlights);
+      }
 
       // Function to render flights
       function renderFlights(data) {
@@ -1038,6 +1075,12 @@ session_start();
 
       // Initial render
       renderFlights(flightsData);
+
+      // Add event listeners for sliders
+      outboundSlider.addEventListener("input", filterFlights);
+      durationSlider.addEventListener("input", filterFlights);
+
+
 
       // Function to handle active button styling
       function setActiveButton(buttonId) {
