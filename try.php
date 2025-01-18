@@ -1,42 +1,39 @@
 <?php
+session_start();
+$responseData = $_SESSION['responseData'];
+function searchLegById($filePath, $searchLegId)
+{
+    // Load the XML file
+    $xml = simplexml_load_string($filePath) or die("Unable to load XML file!");
 
-$curl = curl_init();
-$depDate = "2025-02-24";
-$depApt = "MEL";
-$dstApt = "DEL";
-$returnDate = "2025-02-26";
+    // Convert SimpleXMLElement to JSON and decode to associative array for easier handling
+    $xmlArray = json_decode(json_encode($xml), true);
 
-curl_setopt_array($curl, array(
-    CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_ENCODING => '',
-    CURLOPT_MAXREDIRS => 10,
-    CURLOPT_TIMEOUT => 0,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => 'POST',
-    CURLOPT_POSTFIELDS => "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"2025-01-16\" dstApt=\"MEL\" depApt=\"DEL\"/><flight depDate=\"2025-02-20\" dstApt=\"DEL\" depApt=\"MEL\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>",
-    CURLOPT_HTTPHEADER => array(
-        'accept: application/xml',
-        'accept-encoding: gzip',
-        'api-version: 3.92',
-        'accessmode: agency',
-        'accessid: gaura gaura',
-        'authmode: pwd',
-        'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
-        'Content-Type: application/xml'
-    ),
-));
+    // Check if <legs> exists in the XML structure
+    if (!isset($xmlArray['legs']['leg'])) {
+        return "No <legs> found in the XML.";
+    }
 
-$response = curl_exec($curl);
+    // Iterate through the <leg> elements
+    $legs = $xmlArray['legs']['leg'];
+    $matchingLegs = [];
 
-// Error handling
-if (curl_errno($curl)) {
-    echo 'cURL Error: ' . curl_error($curl);
-} else {
-    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    echo "HTTP Code: $httpCode\n";
-    var_dump($response);
+    foreach ($legs as $leg) {
+        // Check if the leg matches the searchLegId
+        if (
+            isset($leg['@attributes']['legId']) && $leg['@attributes']['legId'] == $searchLegId
+        ) {
+            $matchingLegs[] = $leg['@attributes'];
+        }
+    }
+
+    // Return the matching legs or a message if none found
+    if (!empty($matchingLegs)) {
+        return $matchingLegs;
+    } else {
+        return "No matching legs found for legId: $searchLegId.";
+    }
 }
-
-curl_close($curl);
+echo "<PRE>";
+var_dump(searchLegById($responseData, "28927676"));
+echo "</PRE>";

@@ -1,39 +1,7 @@
 <?php
 session_start();
-$responseData = $_SESSION['responseData'];
-if ($responseData === false) {
-  echo 'cURL Error: ' . curl_error($curl);
-  curl_close($curl);
-  exit;
-}
+// $responseData = $_SESSION['responseData'];
 
-libxml_use_internal_errors(true);
-$xml = simplexml_load_string($responseData);
-if (
-  $xml === false
-) {
-  echo "Failed to parse XML. Errors:\n";
-  foreach (libxml_get_errors() as $error) {
-    echo $error->message, "\n";
-  }
-  libxml_clear_errors();
-  exit;
-}
-
-// Register namespaces for elements with prefixes
-$xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
-
-$fareId = [];
-foreach ($xml->fares->fare as $fare) {
-  $fareId[] = (string)$fare['fareId']; // Access fareId attribute
-  $fares[] = [
-    'fareId' => (string)$fare['fareId'],
-    'shared:fareType' => (string)$fare->children('shared', true)->fareType,
-    'depApt' => (string)$fare['depApt'],
-    'dstApt' => (string)$fare['dstApt'],
-    'shared:vcr' => (string)$fare->children('shared', true)->vcr,
-  ];
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -162,13 +130,8 @@ foreach ($xml->fares->fare as $fare) {
 
 <body>
   <?php
+  $tripType = '';
   require 'api.php';
-  if (isset($_COOKIE['token'])) {
-    $token = $_COOKIE['token'];
-  } else {
-    $token = getToken();
-  }
-  $token = getToken();
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tripType = $_POST['trip'] ?? '';
     $fareType = $_POST['fare'] ?? '';
@@ -181,8 +144,6 @@ foreach ($xml->fares->fare as $fare) {
     $childrenCount = $_POST['children'] ?? 0;
     $infantsCount = $_POST['infants'] ?? 0;
     $total = (int)$adultsCount + (int)$childrenCount + (int)$infantsCount;
-
-
 
     // Store the collected data in a session array
     $_SESSION['formData'] = [
@@ -199,68 +160,114 @@ foreach ($xml->fares->fare as $fare) {
       'total' => $total
     ];
   }
-  // Revadation 
-  // Revalidation
-  if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    if (isset($_GET['traceId']) && isset($_GET['purchaseId'])) {
-      $url = 'https://sandboxapi.getfares.com/Flights/Revalidation/v1';
-      $traceId = $_GET['traceId'];
-      $purchaseId = $_GET['purchaseId'];
+  // For loading all flights 
+  // function getFlightsWithLegs($xmlData)
+  // {
+  //   // Load the XML data
+  //   $xml = simplexml_load_string($xmlData);
+  //   if ($xml === false) {
+  //     throw new Exception("Unable to load XML data: " . implode(", ", libxml_get_errors()));
+  //   }
 
-      // Data to be sent in the body of the request
-      $data = [
-        "traceId" => $traceId,
-        "purchaseIds" => [$purchaseId]
-      ];
+  //   // Initialize the result array
+  //   $flightsWithLegs = [];
 
-      // Convert data array to JSON format
-      $jsonData = json_encode($data);
+  //   // Step 1: Loop through all `tarif` elements to get fareId
+  //   foreach ($xml->xpath("//tarif") as $tarif) {
+  //     $fareId = (string)$tarif['tarifId'];
 
-      // Initialize cURL session
-      $ch = curl_init();
+  //     // Step 2: Loop through all flights under the current fareId
+  //     foreach ($tarif->xpath("fareXRefs/fareXRef/flights/flight") as $flight) {
+  //       $flightId = (string)$flight['flightId'];
+  //       $legs = [];
 
-      // Set the URL and other options for the cURL session
-      curl_setopt($ch, CURLOPT_URL, $url);
-      curl_setopt($ch, CURLOPT_POST, 1);
-      curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-      curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        "Authorization: Bearer $token"
-      ]);
+  //       // Step 3: Loop through all `legXRef` elements to get legId
+  //       foreach ($flight->xpath("legXRefs/legXRef") as $legXRef) {
+  //         $legId = (string)$legXRef['legId'];
 
-      // Execute the cURL session and fetch the response
-      $response = curl_exec($ch);
+  //         // Step 4: Retrieve the <leg> element by legId
+  //         $legData = $xml->xpath("//leg[@legId='$legId']");
+  //         if (!empty($legData)) {
+  //           // Convert the <leg> element to an associative array
+  //           $legs[] = json_decode(json_encode($legData[0]), true)['@attributes'];
+  //         }
+  //       }
 
-      // Check for errors
-      if ($response === false) {
-        echo 'cURL Error: ' . curl_error($ch);
+  //       // Step 5: Store flightId and its associated legs in the result array
+  //       $flightsWithLegs[$flightId] = $legs;
+  //     }
+  //   }
+
+  //   return $flightsWithLegs;
+  // }
+  function getLegIdsByFlightId($fareXRefs, $flightId)
+  {
+    $legIds = []; // Array to store legIds
+
+    // Navigate to the flights array
+    if (isset($fareXRefs['fareXRefs']['fareXRef']['flights']['flight'])) {
+      $flights = $fareXRefs['fareXRefs']['fareXRef']['flights']['flight'];
+
+      // Check if we have multiple flights or a single flight
+      if (isset($flights[0])) {
+        // Multiple flights
+        foreach ($flights as $flight) {
+          if (isset($flight['@attributes']['flightId']) && $flight['@attributes']['flightId'] == $flightId) {
+            // Collect legIds
+            if (isset($flight['legXRefs']['legXRef'])) {
+              foreach ($flight['legXRefs']['legXRef'] as $legRef) {
+                if (isset($legRef['@attributes']['legId'])) {
+                  $legIds[] = $legRef['@attributes']['legId'];
+                }
+              }
+            }
+          }
+        }
       } else {
-        // Decode and print the response
-        $responseData = json_decode($response, true);
-
-        // Check if the responseData has the 'flights' key and 'isFareChange' key within it
-        if (isset($responseData['flights'][0]['isFareChange']) && !$responseData['flights'][0]['isFareChange']) {
-          // Redirect to book.php with the required parameters
-          $_SESSION['responseData'] = [
-            'response' => $responseData,
-          ];
-          header("Location: book.php?traceId=$traceId&purchaseId=$purchaseId");
-          exit(); // Make sure to call exit after redirect
-        } else {
-          // Fare has changed, show an alert and redirect to index.php
-          echo '<script type="text/javascript">';
-          echo 'alert("The fare has changed. Please check the updated fare.");';
-          echo 'window.location.href = "index.php";';
-          echo '</script>';
-          exit();
+        // Single flight
+        if (isset($flights['@attributes']['flightId']) && $flights['@attributes']['flightId'] == $flightId) {
+          // Collect legIds
+          if (isset($flights['legXRefs']['legXRef'])) {
+            foreach ($flights['legXRefs']['legXRef'] as $legRef) {
+              if (isset($legRef['@attributes']['legId'])) {
+                $legIds[] = $legRef['@attributes']['legId'];
+              }
+            }
+          }
         }
       }
-
-      // Close the cURL session
-      curl_close($ch);
-    } else {
     }
+
+    return $legIds;
+  }
+  // To get flight Id from legId
+  function getFareIdFromLegId($legId, $response)
+  {
+
+
+    if (!$response) {
+      return "No XML data found in session.";
+    }
+
+    // Parse the XML data
+    $xmlData = simplexml_load_string($response);
+
+    if (!$xmlData) {
+      return "Failed to parse XML data.";
+    }
+
+    // Navigate the XML structure to match the legId
+    foreach ($xmlData->xpath('//tarifs/tarif') as $tarif) {
+      $fareId = (string)$tarif->fareXRefs->fareXRef['fareId']; // Get fare ID from attribute
+      foreach ($tarif->xpath('./fareXRefs/fareXRef/flights/flight/legXRefs/legXRef') as $legXRef) {
+        if ((string)$legXRef['legId'] === $legId) {
+          return $fareId; // Return fareId if a match is found
+        }
+      }
+    }
+
+    // Return message if no matching fareId is found
+    return "No Fare ID found for leg ID $legId.";
   }
   function getTarifByFareId($responseData, $fareIdToMatch)
   {
@@ -282,6 +289,26 @@ foreach ($xml->fares->fare as $fare) {
 
     // Return the matched tarif array or null if not found
     return $matchedTarif;
+  }
+  // To get adtSell from tarifId
+  function getAdtSellByTarifId($tarifId, $xmlData)
+  {
+    // Load the XML data
+    $xml = simplexml_load_string($xmlData);
+
+    if (!$xml) {
+      return "Failed to load XML data.";
+    }
+
+    // Search for the tarif with the specified ID
+    foreach ($xml->tarifs->tarif as $tarif) {
+      if ((string)$tarif['tarifId'] === $tarifId) {
+        // Return the adtSell value for the matched tarif
+        return (string)$tarif['adtSell'];
+      }
+    }
+
+    return "Tarif ID {$tarifId} not found.";
   }
   function searchLegById($filePath, $searchLegId)
   {
@@ -317,7 +344,7 @@ foreach ($xml->fares->fare as $fare) {
     }
   }
   isset($_SESSION['formData']);
-  if (isset($_POST['trip']) == "oneway") {
+  if ($tripType === "oneway") {
     $curl = curl_init();
     $depDate = $departureDate;
     $depApt = $departFrom;
@@ -345,8 +372,8 @@ foreach ($xml->fares->fare as $fare) {
         'Content-Type: text/plain'
       ),
     ));
-    $execute = curl_exec($curl);
-
+    $responseData = curl_exec($curl);
+    $_SESSION['responseData'] = $responseData;
     if ($responseData === false) {
       echo 'cURL Error: ' . curl_error($curl);
       curl_close($curl);
@@ -380,183 +407,186 @@ foreach ($xml->fares->fare as $fare) {
         'shared:vcr' => (string)$fare->children('shared', true)->vcr,
       ];
     }
-    // var_dump($fareId);
-    // var_dump($fares);
 
     curl_close($curl);
-  } elseif (isset($_POST['trip']) == "roundtrip") {
-    // API endpoint
-    $url = 'https://sandboxapi.getfares.com/Flights/Search/v1'; // Replace with your actual URL
+  }
+  if ($tripType === "roundtrip") {
+    $curl = curl_init();
+    $depDate = $departureDate;
+    $depApt = $departFrom;
+    $dstApt = $flyingTo;
+    $returndate = $returnDate;
+    $postfields = "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"$depDate\" dstApt=\"$depApt\" depApt=\"$dstApt\"/><flight depDate=\"$returndate\" dstApt=\"$dstApt\" depApt=\"$depApt\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>";
+    // echo "<script>alert('$postfields');</script>";
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => '',
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 0,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => 'POST',
+      CURLOPT_POSTFIELDS => $postfields,
+      CURLOPT_HTTPHEADER => array(
+        'accept: application/xml',
+        'accept-encoding: gzip',
+        'api-version: 3.92',
+        'accessmode: agency',
+        'accessid: gaura gaura',
+        'authmode: pwd',
+        'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
+        'Content-Type: application/xml'
+      ),
+    ));
 
-    // Data to be sent in the body of the request
-    $data = [
-      "originDestinations" => [
-        [
-          "departureDateTime" => $departureDate . "T09:10:27.482Z",
-          "origin" => (string)$departFrom,
-          "destination" => (string)$flyingTo
-        ],
-        [
-          "departureDateTime" => $returnDate . "10:27.482Z",
-          "origin" => (string)$flyingTo,
-          "destination" => (string)$departFrom
-        ]
-      ],
-      "adultCount" => $adultsCount,
-      "childCount" => $childrenCount,
-      "infantCount" => $infantsCount,
-      "cabinClass" => $travelClass,
-      "cabinPreferenceType" => "Preferred",
-      "stopOver" => "None",
-      "airTravelType" => $tripType,
-      "includeBaggage" => true,
-      "includeMiniRules" => true
-    ];
-
-    // Convert data array to JSON format
-    $jsonData = json_encode($data);
-
-    // Initialize cURL session
-    $ch = curl_init();
-
-    // Set the URL and other options for the cURL session
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-      'Content-Type: application/json',
-      "Authorization: Bearer $token"
-    ]);
-
-    // Execute the cURL session and fetch the response
-    $response = curl_exec($ch);
-
-    // Check for errors
-    if ($response === false) {
-      echo 'cURL Error: ' . curl_error($ch);
-    } else {
-      // Decode and print the response
-      $responseData = json_decode($response, true);
-      print_r($responseData);
+    $responseData = curl_exec($curl);
+    $_SESSION['responseData'] = $responseData;
+    if ($responseData === false) {
+      echo 'cURL Error: ' . curl_error($curl);
+      curl_close($curl);
+      exit;
     }
 
-    // Close the cURL session
-    curl_close($ch);
+    libxml_use_internal_errors(true);
+    $xml = simplexml_load_string($responseData);
+    if (
+      $xml === false
+    ) {
+      echo "Failed to parse XML. Errors:\n";
+      foreach (libxml_get_errors() as $error) {
+        echo $error->message, "\n";
+      }
+      libxml_clear_errors();
+      exit;
+    }
+
+    // Register namespaces for elements with prefixes
+    $xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
+
+    $fareId = [];
+    foreach ($xml->fares->fare as $fare) {
+      $fareId[] = (string)$fare['fareId']; // Access fareId attribute
+      $fares[] = [
+        'fareId' => (string)$fare['fareId'],
+        'shared:fareType' => (string)$fare->children('shared', true)->fareType,
+        'depApt' => (string)$fare['depApt'],
+        'dstApt' => (string)$fare['dstApt'],
+        'shared:vcr' => (string)$fare->children('shared', true)->vcr,
+      ];
+    }
   }
   ?>
-  <?php if (!isset($responseData)): ?>
-    <div class="container my-5">
-      <div class="bg-warning p-4 rounded">
-        <div class="d-flex align-items-center mb-3">
-          <h2 class="mb-0 mr-3"><i class="fas fa-plane"></i> Flights</h2>
-        </div>
-        <form action="" method="post" name="search" id="flightSearchForm">
-          <div class="form-row mb-3">
-            <div class="col">
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="trip" id="oneWay" value="oneway">
-                <label class="form-check-label" for="oneWay">One Way</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="trip" id="roundTrip" value="roundtrip">
-                <label class="form-check-label" for="roundTrip">Round Trip</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="trip" id="multiCity" value="multicity">
-                <label class="form-check-label" for="multiCity">Multi city/Stopovers</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row mb-3">
-            <div class="col">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="fare" id="studentFares" value="student">
-                <label class="form-check-label" for="studentFares">Student fares</label>
-              </div>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group col-md-3">
-              <label for="departFrom">Depart from</label>
-              <input type="text" class="form-control" id="departFrom" name="departFrom" placeholder="Depart from">
-              <input type="hidden" id="departFromCode" name="departFromCode">
-            </div>
-            <div class="form-group col-md-3">
-              <label for="flyingTo">Flying to</label>
-              <input type="text" class="form-control" id="flyingTo" name="flyingTo" placeholder="Flying to">
-              <input type="hidden" id="flyingToCode" name="flyingToCode">
-            </div>
-            <div class="form-group col-md-2">
-              <label for="departureDate">Departure date</label>
-              <input type="date" class="form-control" id="departureDate" name="departureDate">
-            </div>
-            <div class="form-group col-md-2">
-              <label for="returnDate">Return date</label>
-              <input type="date" class="form-control" id="returnDate" name="returnDate">
-            </div>
-            <div class="form-group col-md-2">
-              <label for="class">Class</label>
-              <select id="class" name="class" class="form-control">
-                <option selected>Economy</option>
-                <option>Business</option>
-                <option>First</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="passengers">Passengers</label>
-            <div class="custom-dropdown">
-              <div style="border: 1px black solid; width: 50px; padding-left: 10px; cursor: pointer;" id="passengerDropdown">
-                1
-              </div>
-              <div class="custom-dropdown-menu" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 10px;">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <span>Adults</span>
-                    <div class="description">ages 18 and over</div>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="adults-minus">-</button>
-                    <span class="mx-2" id="adults-count">1</span>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="adults-plus">+</button>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <span>Children</span>
-                    <div class="description">ages 2 - 12</div>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="children-minus">-</button>
-                    <span class="mx-2" id="children-count">0</span>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="children-plus">+</button>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <span>Infants</span>
-                    <div class="description">younger than 2</div>
-                  </div>
-                  <div class="d-flex align-items-center">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="infants-minus">-</button>
-                    <span class="mx-2" id="infants-count">0</span>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="infants-plus">+</button>
-                  </div>
-                </div>
-                <button style="width: 80px;" class="btn btn-primary btn-block mt-2" id="passenger-ready" type="button">Ready</button>
-              </div>
-            </div>
-            <input type="hidden" id="adultsInput" name="adults" value="1">
-            <input type="hidden" id="childrenInput" name="children" value="0">
-            <input type="hidden" id="infantsInput" name="infants" value="0">
-          </div>
-          <button type="submit" class="btn btn-dark"><i class="fas fa-search"></i> Search</button>
-        </form>
+  <div class="container my-5">
+    <div class="bg-warning p-4 rounded">
+      <div class="d-flex align-items-center mb-3">
+        <h2 class="mb-0 mr-3"><i class="fas fa-plane"></i> Flights</h2>
       </div>
+      <form action="" method="post" name="search" id="flightSearchForm">
+        <div class="form-row mb-3">
+          <div class="col">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="trip" id="oneWay" value="oneway">
+              <label class="form-check-label" for="oneWay">One Way</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="trip" id="roundTrip" value="roundtrip">
+              <label class="form-check-label" for="roundTrip">Round Trip</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="trip" id="multiCity" value="multicity">
+              <label class="form-check-label" for="multiCity">Multi city/Stopovers</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row mb-3">
+          <div class="col">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="fare" id="studentFares" value="student">
+              <label class="form-check-label" for="studentFares">Student fares</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-3">
+            <label for="departFrom">Depart from</label>
+            <input type="text" class="form-control" id="departFrom" name="departFrom" placeholder="Depart from">
+            <input type="hidden" id="departFromCode" name="departFromCode">
+          </div>
+          <div class="form-group col-md-3">
+            <label for="flyingTo">Flying to</label>
+            <input type="text" class="form-control" id="flyingTo" name="flyingTo" placeholder="Flying to">
+            <input type="hidden" id="flyingToCode" name="flyingToCode">
+          </div>
+          <div class="form-group col-md-2">
+            <label for="departureDate">Departure date</label>
+            <input type="date" class="form-control" id="departureDate" name="departureDate">
+          </div>
+          <div class="form-group col-md-2">
+            <label for="returnDate">Return date</label>
+            <input type="date" class="form-control" id="returnDate" name="returnDate">
+          </div>
+          <div class="form-group col-md-2">
+            <label for="class">Class</label>
+            <select id="class" name="class" class="form-control">
+              <option selected>Economy</option>
+              <option>Business</option>
+              <option>First</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="passengers">Passengers</label>
+          <div class="custom-dropdown">
+            <div style="border: 1px black solid; width: 50px; padding-left: 10px; cursor: pointer;" id="passengerDropdown">
+              1
+            </div>
+            <div class="custom-dropdown-menu" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 10px;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <span>Adults</span>
+                  <div class="description">ages 18 and over</div>
+                </div>
+                <div class="d-flex align-items-center">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="adults-minus">-</button>
+                  <span class="mx-2" id="adults-count">1</span>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="adults-plus">+</button>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <span>Children</span>
+                  <div class="description">ages 2 - 12</div>
+                </div>
+                <div class="d-flex align-items-center">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="children-minus">-</button>
+                  <span class="mx-2" id="children-count">0</span>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="children-plus">+</button>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <span>Infants</span>
+                  <div class="description">younger than 2</div>
+                </div>
+                <div class="d-flex align-items-center">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="infants-minus">-</button>
+                  <span class="mx-2" id="infants-count">0</span>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="infants-plus">+</button>
+                </div>
+              </div>
+              <button style="width: 80px;" class="btn btn-primary btn-block mt-2" id="passenger-ready" type="button">Ready</button>
+            </div>
+          </div>
+          <input type="hidden" id="adultsInput" name="adults" value="1">
+          <input type="hidden" id="childrenInput" name="children" value="0">
+          <input type="hidden" id="infantsInput" name="infants" value="0">
+        </div>
+        <button type="submit" class="btn btn-dark"><i class="fas fa-search"></i> Search</button>
+      </form>
     </div>
-  <?php elseif (isset($responseData)): ?>
-
+  </div>
+  <?php if (isset($responseData)): ?>
     <div class="container-md">
       <div class="row">
         <!-- Filter -->
@@ -579,17 +609,6 @@ foreach ($xml->fares->fare as $fare) {
                     value="240" />
                   <span id="outboundTime">04:00 - 23:59</span>
                 </div>
-                <div>
-                  <label for="returnSlider">Return</label>
-                  <input
-                    type="range"
-                    class="form-control-range"
-                    id="returnSlider"
-                    min="0"
-                    max="1440"
-                    value="0" />
-                  <span id="returnTime">00:00 - 23:59</span>
-                </div>
               </div>
             </div>
 
@@ -610,78 +629,6 @@ foreach ($xml->fares->fare as $fare) {
                 <span id="durationTime">2.5 hours - 5.5 hours</span>
               </div>
             </div>
-
-            <!-- Airlines -->
-            <div class="card">
-              <div
-                class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Airlines</h5>
-                <div>
-                  <button class="btn btn-sm btn-primary" id="selectAll">
-                    Select all
-                  </button>
-                  <button class="btn btn-sm btn-secondary" id="clearAll">
-                    Clear all
-                  </button>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="airIndia"
-                    checked />
-                  <label class="form-check-label" for="airIndia">Air India
-                    <small class="text-muted">from ₹10,429</small></label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="airIndiaExpress"
-                    checked />
-                  <label class="form-check-label" for="airIndiaExpress">Air India Express
-                    <small class="text-muted">from ₹10,136</small></label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="akasaAir"
-                    checked />
-                  <label class="form-check-label" for="akasaAir">Akasa Air
-                    <small class="text-muted">from ₹9,107</small></label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="indigo"
-                    checked />
-                  <label class="form-check-label" for="indigo">IndiGo
-                    <small class="text-muted">from ₹9,168</small></label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="spicejet"
-                    checked />
-                  <label class="form-check-label" for="spicejet">SpiceJet
-                    <small class="text-muted">from ₹10,559</small></label>
-                </div>
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="airlineCombinations"
-                    checked />
-                  <label class="form-check-label" for="airlineCombinations">Airline combinations
-                    <small class="text-muted">from ₹8,865</small></label>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         <div class="col-md-6 my-2">
@@ -692,23 +639,23 @@ foreach ($xml->fares->fare as $fare) {
               <p class="m-0 fw-bold price">
                 ₹9,033 <i class="fa-solid fa-circle-info"></i>
               </p>
-              <p class="m-0">2h 15(average)</p>
             </div>
             <div class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Cheapest</p>
               <p class="m-0 fw-bold price">₹8,865</p>
-              <p class="m-0">2h 10(average)</p>
             </div>
             <div class="priceList col-md-4 col-sm-4 p-2">
               <p class="m-0">Fastest</p>
               <p class="m-0 fw-bold price">₹15,046</p>
-              <p class="m-0">2h 03(average)</p>
             </div>
           </div>
           <?php $index = 1;
           foreach ($fares as $id): ?>
             <?php
-            $fareXRef = getTarifByFareId($responseData, $id['fareId']); ?>
+            $fareXRef = getTarifByFareId($responseData, $id['fareId']);
+            // echo "<PRE>";
+            // var_dump($fareXRef);
+            // echo "</PRE>"; ?>
             <!-- flight div -->
             <div class="flight-div mb-2 border rounded">
               <div
@@ -734,36 +681,46 @@ foreach ($xml->fares->fare as $fare) {
                   <img src="newUi/images/indigo.png" alt="" />
                 </div>
                 <div class="col-md-7 col-sm-7 border-end">
-                  <?php foreach ($fareXRef['fareXRefs']['fareXRef']['flights']['flight'] as $flight):
-                    // var_dump($flight);
-                    if (isset($flights["@attributes"])) {
-                      $flights = [$flights]; // Normalize single flight into an array
-                    }
-                    // echo '<pre>';
-                    // print_r($flight);
-                    // echo '</pre>'; 
+                  <?php
+                  // Retrieve the flights array
+                  $flights = $fareXRef['fareXRefs']['fareXRef']['flights']['flight'];
+
+                  // Check if it's a single flight or multiple flights
+                  if (isset($flights[0])) {
+                    // Multiple flights
+                    $flightList = $flights;
+                  } else {
+                    // Single flight, wrap it in an array
+                    $flightList = [$flights];
+                  }
+
+                  // Loop through the flights
+                  foreach ($flightList as $flight):
                   ?>
                     <div class="d-grid">
-                      <?php ?>
                       <div class="d-flex align-items-center">
                         <div class="col-md-4 col-sm-4 text-center pr-2">
-                          <p>
-                          <?php
-                              // foreach ($flights as $flight) {
-                              //   if (isset($flight["@attributes"]["flightId"])) {
-                              //     echo "<p>Flight ID: " . $flight["@attributes"]["flightId"] . "</p>";
-                              //   } else {
-                              //     echo "<p>Flight ID not found.</p>";
-                              //   }
-                              // } 
-                              echo $flight['@attributes']['flightId'];
-                          ?>
-                          </p>
-                          <p class="m-0">07:05</p>
-                          <p class="fw-bold m-0">BOM</p>
+                            <?php
+                            // Output flight ID if available
+                            if (isset($flight["@attributes"]["flightId"])) {
+                              // echo "<p>Flight ID: " . $flight["@attributes"]["flightId"] . "</p>";
+                              $legIds = getLegIdsByFlightId($fareXRef, $flight["@attributes"]["flightId"]);
+                              $legs = [];
+                              foreach ($legIds as $legId) {
+                                $legs[] = searchLegById($responseData, $legId);
+                              }
+                              // var_dump($legs);
+                              $lastVal = count($legs) -1;
+                              $legs[] = "";
+                            } else {
+                              echo "<p>Flight ID not found.</p>";
+                            }
+                            ?>
+                          <p class="m-0"><?php echo $legs[0][0]['depTime'];?></p>
+                          <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt']; ?></p>
                         </div>
                         <div class="col-md-4 col-sm-4">
-                          <p class="m-0 text-center">2h 10</p>
+                          <p class="m-0 text-center"><?php echo $legs[0][0]['elapsed']; ?></p>
                           <div class="d-flex">
                             <p class="m-0">
                               --------<svg
@@ -783,14 +740,14 @@ foreach ($xml->fares->fare as $fare) {
                           </p>
                         </div>
                         <div class="col-md-4 col-sm-4 text-center pr-2">
-                          <p class="m-0">09:15</p>
-                          <p class="fw-bold m-0">DEL</p>
+                          <p class="m-0"><?php echo $legs[$lastVal][0]['arrTime']; ?></p>
+                          <p class="fw-bold m-0"><?php echo $legs[$lastVal][0]['dstApt']; ?></p>
                         </div>
                       </div>
-                      <?php ?>
                     </div>
                   <?php endforeach; ?>
                 </div>
+
                 <div
                   class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
                   <p class="m-0 fw-bold text-center">Price p.p</p>
