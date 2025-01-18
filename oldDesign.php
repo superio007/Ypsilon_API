@@ -634,19 +634,19 @@ session_start();
         <div class="col-md-6 my-2">
           <!-- price list -->
           <div class="row border rounded mb-2" style="background: #fff">
-            <div class="priceList col-md-4 col-sm-4 border-end p-2">
+            <div id="cheapest" class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Best</p>
-              <p class="m-0 fw-bold price">
-                ₹9,033 <i class="fa-solid fa-circle-info"></i>
+              <p class="m-0 fw-bold ">
+                <span id="cheapestPrice"></span> <i class="fa-solid fa-circle-info"></i>
               </p>
             </div>
-            <div class="priceList col-md-4 col-sm-4 border-end p-2">
+            <div id="average" class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Cheapest</p>
-              <p class="m-0 fw-bold price">₹8,865</p>
+              <p class="m-0 fw-bold "><span id="averagePrice"></span></p>
             </div>
-            <div class="priceList col-md-4 col-sm-4 p-2">
+            <div id="highest" class="priceList col-md-4 col-sm-4 p-2">
               <p class="m-0">Fastest</p>
-              <p class="m-0 fw-bold price">₹15,046</p>
+              <p class="m-0 fw-bold "><span id="highestPrice"></span></p>
             </div>
           </div>
           <?php $index = 1;
@@ -655,7 +655,8 @@ session_start();
             $fareXRef = getTarifByFareId($responseData, $id['fareId']);
             // echo "<PRE>";
             // var_dump($fareXRef);
-            // echo "</PRE>"; ?>
+            // echo "</PRE>"; 
+            ?>
             <!-- flight div -->
             <div class="flight-div mb-2 border rounded">
               <div
@@ -700,23 +701,23 @@ session_start();
                     <div class="d-grid">
                       <div class="d-flex align-items-center">
                         <div class="col-md-4 col-sm-4 text-center pr-2">
-                            <?php
-                            // Output flight ID if available
-                            if (isset($flight["@attributes"]["flightId"])) {
-                              // echo "<p>Flight ID: " . $flight["@attributes"]["flightId"] . "</p>";
-                              $legIds = getLegIdsByFlightId($fareXRef, $flight["@attributes"]["flightId"]);
-                              $legs = [];
-                              foreach ($legIds as $legId) {
-                                $legs[] = searchLegById($responseData, $legId);
-                              }
-                              // var_dump($legs);
-                              $lastVal = count($legs) -1;
-                              $legs[] = "";
-                            } else {
-                              echo "<p>Flight ID not found.</p>";
+                          <?php
+                          // Output flight ID if available
+                          if (isset($flight["@attributes"]["flightId"])) {
+                            // echo "<p>Flight ID: " . $flight["@attributes"]["flightId"] . "</p>";
+                            $legIds = getLegIdsByFlightId($fareXRef, $flight["@attributes"]["flightId"]);
+                            $legs = [];
+                            foreach ($legIds as $legId) {
+                              $legs[] = searchLegById($responseData, $legId);
                             }
-                            ?>
-                          <p class="m-0"><?php echo $legs[0][0]['depTime'];?></p>
+                            // var_dump($legs);
+                            $lastVal = count($legs) - 1;
+                            $legs[] = "";
+                          } else {
+                            echo "<p>Flight ID not found.</p>";
+                          }
+                          ?>
+                          <p class="m-0"><?php echo $legs[0][0]['depTime']; ?></p>
                           <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt']; ?></p>
                         </div>
                         <div class="col-md-4 col-sm-4">
@@ -751,7 +752,7 @@ session_start();
                 <div
                   class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
                   <p class="m-0 fw-bold text-center">Price p.p</p>
-                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;"><?php echo $fareXRef["@attributes"]["adtSell"] ?></span></p>
+                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;" class="price"><?php echo $fareXRef["@attributes"]["adtSell"] ?></span></p>
                   <button
                     class="btn book-button px-3"
                     style="background-color: #05203c; color: #fff">
@@ -1032,6 +1033,30 @@ session_start();
       });
     });
     document.addEventListener('DOMContentLoaded', function() {
+        // Fetch all elements with the class "price"
+        const prices = document.querySelectorAll(".price");
+
+        // Extract numeric values from the text content of the elements
+        const priceValues = Array.from(prices).map(priceElement => {
+          const priceText = priceElement.textContent.trim();
+          // Remove non-numeric characters and convert to a number
+          return parseFloat(priceText.replace(/[^0-9.]/g, "")) || 0;
+        });
+
+        if (priceValues.length > 0) {
+          // Calculate the lowest, highest, and average prices
+          const lowestPrice = Math.min(...priceValues);
+          const highestPrice = Math.max(...priceValues);
+          const averagePrice = (priceValues.reduce((a, b) => a + b, 0) / priceValues.length).toFixed(2);
+
+          // Insert values into the respective elements
+          document.getElementById("cheapestPrice").textContent = `AUD ${lowestPrice}`;
+          document.getElementById("averagePrice").textContent = `AUD ${averagePrice}`;
+          document.getElementById("highestPrice").textContent = `AUD ${highestPrice}`;
+        } else {
+          console.error("No prices found.");
+        }
+
       var studentFaresRadio = document.getElementById('studentFares');
       var previouslySelected = null;
 
