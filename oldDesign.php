@@ -125,6 +125,17 @@ session_start();
     .search-div button {
       font-size: 12px;
     }
+
+    .active-btn {
+      background-color: #05203c;
+      /* Dark background */
+      color: #fff;
+      /* White text */
+      border-radius: 5px;
+      /* Rounded corners */
+      font-weight: bold;
+      /* Bold text */
+    }
   </style>
 </head>
 
@@ -964,37 +975,34 @@ session_start();
     document.addEventListener('DOMContentLoaded', function() {
       const container = document.getElementById("flightResults");
 
-      // Check if the container exists
-      if (!container) {
-        console.error("Flight results container not found.");
-        return;
-      }
+      // Function to render flights
+      function renderFlights(data) {
+        // Clear existing content
+        container.innerHTML = "";
 
-      // Loop through the flights data
-      flightsData.forEach((flight, index) => {
-        // Create flight wrapper
-        const flightDiv = document.createElement("div");
-        flightDiv.className = "flight-div mb-2 border rounded";
+        // Loop through the flights data and render
+        data.forEach((flight, index) => {
+          const flightDiv = document.createElement("div");
+          flightDiv.className = "flight-div mb-2 border rounded";
 
-        // Add flight content
-        const flightContent = `
-      <div class="py-1 px-2 d-flex justify-content-between align-items-center">
-        <p style="font-size: small; margin: 0; padding: 7px">
-          This flight emits <span class="fw-bold">19% less CO2e</span> than a typical flight
-          on this route <span>${index + 1} FareId: ${flight.fareId}</span>
-        </p>
-        <i class="fa-solid fa-circle-info fa-xs"></i>
-      </div>
-      <div style="display: flex; padding: 10px 0; background-color: #fff;">
-        <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
-          <img src="newUi/images/Alsaka air.png" alt="" />
-          <img src="newUi/images/indigo.png" alt="" />
+          const flightContent = `
+        <div class="py-1 px-2 d-flex justify-content-between align-items-center">
+          <p style="font-size: small; margin: 0; padding: 7px">
+            This flight emits <span class="fw-bold">19% less CO2e</span> than a typical flight
+            on this route <span>${index + 1} FareId: ${flight.fareId}</span>
+          </p>
+          <i class="fa-solid fa-circle-info fa-xs"></i>
         </div>
-        <div class="col-md-7 col-sm-7 border-end">
-          ${flight.legs
-            .map(
-              (legs) => `
-                <div class="d-grid" style="margin:12px 0;">
+        <div style="display: flex; padding: 10px 0; background-color: #fff;">
+          <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
+            <img src="newUi/images/Alsaka air.png" alt="" />
+            <img src="newUi/images/indigo.png" alt="" />
+          </div>
+          <div class="col-md-7 col-sm-7 border-end">
+            ${flight.legs
+              .map(
+                (legs) => `
+                <div class="d-grid">
                   <div class="d-flex align-items-center">
                     <div class="col-md-4 col-sm-4 text-center pr-2">
                       <p class="m-0">${legs[0][0]?.depTime || "N/A"}</p>
@@ -1011,26 +1019,53 @@ session_start();
                   </div>
                 </div>
               `
-            )
-            .join("")}
-        </div>
-        <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
-          <p class="m-0 fw-bold text-center">Price p.p</p>
-          <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;" class="price">${flight.adtSell}</span></p>
-          <div class="d-flex justify-content-center align-content-center pt-3">
+              )
+              .join("")}
+          </div>
+          <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
+            <p class="m-0 fw-bold text-center">Price p.p</p>
+            <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;" class="price">${flight.adtSell}</span></p>
             <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">
               Select <i class="fa-solid fa-arrow-right"></i>
             </button>
           </div>
         </div>
-      </div>
-    `;
+      `;
+          flightDiv.innerHTML = flightContent;
+          container.appendChild(flightDiv);
+        });
+      }
 
-        // Insert content into the div
-        flightDiv.innerHTML = flightContent;
+      // Initial render
+      renderFlights(flightsData);
 
-        // Append to the container
-        container.appendChild(flightDiv);
+      // Function to handle active button styling
+      function setActiveButton(buttonId) {
+        // Remove active class from all buttons
+        document.querySelectorAll(".priceList").forEach((btn) => btn.classList.remove("active-btn"));
+
+        // Add active class to the clicked button
+        document.getElementById(buttonId).classList.add("active-btn");
+      }
+
+      // Add click event listeners for sorting and styling
+      document.getElementById("cheapest").addEventListener("click", () => {
+        setActiveButton("cheapest");
+        const sortedData = [...flightsData].sort((a, b) => a.adtSell - b.adtSell);
+        renderFlights(sortedData);
+      });
+
+      document.getElementById("average").addEventListener("click", () => {
+        setActiveButton("average");
+        const average = flightsData.reduce((acc, flight) => acc + parseFloat(flight.adtSell), 0) / flightsData.length;
+        const filteredData = flightsData.filter((flight) => flight.adtSell >= average);
+        renderFlights(filteredData);
+      });
+
+      document.getElementById("highest").addEventListener("click", () => {
+        setActiveButton("highest");
+        const sortedData = [...flightsData].sort((a, b) => b.adtSell - a.adtSell);
+        renderFlights(sortedData);
       });
       // Fetch all elements with the class "price"
       const prices = document.querySelectorAll(".price");
