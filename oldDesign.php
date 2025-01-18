@@ -623,12 +623,14 @@ session_start();
                   class="form-control-range"
                   id="durationSlider"
                   min="0"
-                  max="10"
+                  max="24"
                   step="0.5"
                   value="2.5" />
                 <span id="durationTime">2.5 hours - 5.5 hours</span>
               </div>
             </div>
+
+
           </div>
         </div>
         <div class="col-md-6 my-2">
@@ -649,120 +651,47 @@ session_start();
               <p class="m-0 fw-bold "><span id="highestPrice"></span></p>
             </div>
           </div>
-          <?php $index = 1;
-          foreach ($fares as $id): ?>
-            <?php
-            $fareXRef = getTarifByFareId($responseData, $id['fareId']);
-            // echo "<PRE>";
-            // var_dump($fareXRef);
-            // echo "</PRE>"; 
-            ?>
-            <!-- flight div -->
-            <div class="flight-div mb-2 border rounded">
-              <div
-                class="py-1 px-2 d-flex justify-content-between align-items-center">
-                <p style="font-size: small; margin: 0; padding: 7px">
-                  This flight emits
-                  <span class="fw-bold">19% less CO2e</span> than a typical
-                  flight on this route <span><?php echo $index . "FareId :" . $id['fareId']; ?></span>
-                </p>
-                <i class="fa-solid fa-circle-info fa-xs"></i>
-              </div>
-              <div
-                style="
-                  display: flex;
-                  padding: 10px 0;
-                  background-color: #fff;
-                  border-bottom-right-radius: 7px;
-                  border-bottom-left-radius: 7px;
-                ">
-                <div
-                  class="col-md-2 col-sm-2 gap-3" style="display: grid;">
-                  <img src="newUi/images/Alsaka air.png" alt="" />
-                  <img src="newUi/images/indigo.png" alt="" />
-                </div>
-                <div class="col-md-7 col-sm-7 border-end">
-                  <?php
-                  // Retrieve the flights array
-                  $flights = $fareXRef['fareXRefs']['fareXRef']['flights']['flight'];
-
-                  // Check if it's a single flight or multiple flights
-                  if (isset($flights[0])) {
-                    // Multiple flights
-                    $flightList = $flights;
-                  } else {
-                    // Single flight, wrap it in an array
-                    $flightList = [$flights];
-                  }
-
-                  // Loop through the flights
-                  foreach ($flightList as $flight):
-                  ?>
-                    <div class="d-grid">
-                      <div class="d-flex align-items-center">
-                        <div class="col-md-4 col-sm-4 text-center pr-2">
-                          <?php
-                          // Output flight ID if available
-                          if (isset($flight["@attributes"]["flightId"])) {
-                            // echo "<p>Flight ID: " . $flight["@attributes"]["flightId"] . "</p>";
-                            $legIds = getLegIdsByFlightId($fareXRef, $flight["@attributes"]["flightId"]);
-                            $legs = [];
-                            foreach ($legIds as $legId) {
-                              $legs[] = searchLegById($responseData, $legId);
-                            }
-                            // var_dump($legs);
-                            $lastVal = count($legs) - 1;
-                            $legs[] = "";
-                          } else {
-                            echo "<p>Flight ID not found.</p>";
-                          }
-                          ?>
-                          <p class="m-0"><?php echo $legs[0][0]['depTime']; ?></p>
-                          <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt']; ?></p>
-                        </div>
-                        <div class="col-md-4 col-sm-4">
-                          <p class="m-0 text-center"><?php echo $legs[0][0]['elapsed']; ?></p>
-                          <div class="d-flex">
-                            <p class="m-0">
-                              --------<svg
-                                style="width: 12px"
-                                xmlns="http://www.w3.org/2000/svg"
-                                xml:space="preserve"
-                                viewBox="0 0 12 12"
-                                class="LegInfo_planeEnd__ZGU5M">
-                                <path
-                                  fill="#898294"
-                                  d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
-                              </svg>
-                            </p>
-                          </div>
-                          <p class="m-0 text-center" style="color: #48bddd">
-                            Direct
-                          </p>
-                        </div>
-                        <div class="col-md-4 col-sm-4 text-center pr-2">
-                          <p class="m-0"><?php echo $legs[$lastVal][0]['arrTime']; ?></p>
-                          <p class="fw-bold m-0"><?php echo $legs[$lastVal][0]['dstApt']; ?></p>
-                        </div>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                </div>
-
-                <div
-                  class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
-                  <p class="m-0 fw-bold text-center">Price p.p</p>
-                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;" class="price"><?php echo $fareXRef["@attributes"]["adtSell"] ?></span></p>
-                  <button
-                    class="btn book-button px-3"
-                    style="background-color: #05203c; color: #fff">
-                    Select <i class="fa-solid fa-arrow-right"></i>
-                  </button>
-                </div>
+          <div>
+            <div>
+              <div id="flightResults">
+                <!-- JavaScript will dynamically insert flight details here -->
               </div>
             </div>
-            <?php $index++; ?>
-          <?php endforeach; ?>
+          </div>
+          <?php
+          // Prepare flight data
+          $flightsData = [];
+          $index = 1;
+          foreach ($fares as $id) {
+            $fareXRef = getTarifByFareId($responseData, $id['fareId']);
+            $flights = isset($fareXRef['fareXRefs']['fareXRef']['flights']['flight'][0])
+              ? $fareXRef['fareXRefs']['fareXRef']['flights']['flight']
+              : [$fareXRef['fareXRefs']['fareXRef']['flights']['flight']];
+
+            $legsInfo = [];
+            foreach ($flights as $flight) {
+              $flightId = $flight["@attributes"]["flightId"];
+              $legIds = getLegIdsByFlightId($fareXRef, $flightId);
+              $legs = [];
+              foreach ($legIds as $legId) {
+                $legs[] = searchLegById($responseData, $legId);
+              }
+              $legsInfo[] = $legs;
+            }
+
+            $flightsData[] = [
+              'fareId' => $id['fareId'],
+              'adtSell' => $fareXRef["@attributes"]["adtSell"],
+              'legs' => $legsInfo,
+            ];
+          }
+          ?>
+
+          <script>
+            // Pass the PHP array to JavaScript as JSON
+            const flightsData = <?php echo json_encode($flightsData); ?>;
+          </script>
+
         </div>
         <div class="col-md-2 d-md-block d-none">
           <img style="width: -webkit-fill-available;" src="newUi/images/BNPLRoadblock_150x1450.jpg" alt="" />
@@ -1033,80 +962,99 @@ session_start();
       });
     });
     document.addEventListener('DOMContentLoaded', function() {
-        // Fetch all elements with the class "price"
-        const prices = document.querySelectorAll(".price");
+      const container = document.getElementById("flightResults");
 
-        // Extract numeric values from the text content of the elements
-        const priceValues = Array.from(prices).map(priceElement => {
-          const priceText = priceElement.textContent.trim();
-          // Remove non-numeric characters and convert to a number
-          return parseFloat(priceText.replace(/[^0-9.]/g, "")) || 0;
-        });
-
-        if (priceValues.length > 0) {
-          // Calculate the lowest, highest, and average prices
-          const lowestPrice = Math.min(...priceValues);
-          const highestPrice = Math.max(...priceValues);
-          const averagePrice = (priceValues.reduce((a, b) => a + b, 0) / priceValues.length).toFixed(2);
-
-          // Insert values into the respective elements
-          document.getElementById("cheapestPrice").textContent = `AUD ${lowestPrice}`;
-          document.getElementById("averagePrice").textContent = `AUD ${averagePrice}`;
-          document.getElementById("highestPrice").textContent = `AUD ${highestPrice}`;
-        } else {
-          console.error("No prices found.");
-        }
-
-      var studentFaresRadio = document.getElementById('studentFares');
-      var previouslySelected = null;
-
-      studentFaresRadio.addEventListener('click', function(event) {
-        if (previouslySelected === this) {
-          this.checked = false;
-          previouslySelected = null;
-        } else {
-          previouslySelected = this;
-        }
-      });
-      const outboundSlider = document.getElementById("outboundSlider");
-      const returnSlider = document.getElementById("returnSlider");
-      const durationSlider = document.getElementById("durationSlider");
-      const outboundTime = document.getElementById("outboundTime");
-      const returnTime = document.getElementById("returnTime");
-      const durationTime = document.getElementById("durationTime");
-      const selectAll = document.getElementById("selectAll");
-      const clearAll = document.getElementById("clearAll");
-      const checkboxes = document.querySelectorAll(".form-check-input");
-
-      function formatTime(value) {
-        const hours = Math.floor(value / 60);
-        const minutes = value % 60;
-        return `${hours.toString().padStart(2, "0")}:${minutes
-            .toString()
-            .padStart(2, "0")}`;
+      // Check if the container exists
+      if (!container) {
+        console.error("Flight results container not found.");
+        return;
       }
 
-      outboundSlider.addEventListener("input", () => {
-        outboundTime.textContent = `${formatTime(
-            outboundSlider.value
-          )} - 23:59`;
+      // Loop through the flights data
+      flightsData.forEach((flight, index) => {
+        // Create flight wrapper
+        const flightDiv = document.createElement("div");
+        flightDiv.className = "flight-div mb-2 border rounded";
+
+        // Add flight content
+        const flightContent = `
+      <div class="py-1 px-2 d-flex justify-content-between align-items-center">
+        <p style="font-size: small; margin: 0; padding: 7px">
+          This flight emits <span class="fw-bold">19% less CO2e</span> than a typical flight
+          on this route <span>${index + 1} FareId: ${flight.fareId}</span>
+        </p>
+        <i class="fa-solid fa-circle-info fa-xs"></i>
+      </div>
+      <div style="display: flex; padding: 10px 0; background-color: #fff;">
+        <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
+          <img src="newUi/images/Alsaka air.png" alt="" />
+          <img src="newUi/images/indigo.png" alt="" />
+        </div>
+        <div class="col-md-7 col-sm-7 border-end">
+          ${flight.legs
+            .map(
+              (legs) => `
+                <div class="d-grid" style="margin:12px 0;">
+                  <div class="d-flex align-items-center">
+                    <div class="col-md-4 col-sm-4 text-center pr-2">
+                      <p class="m-0">${legs[0][0]?.depTime || "N/A"}</p>
+                      <p class="fw-bold m-0">${legs[0][0]?.depApt || "N/A"}</p>
+                    </div>
+                    <div class="col-md-4 col-sm-4">
+                      <p class="m-0 text-center">${legs[0][0]?.elapsed || "N/A"}</p>
+                      <p class="m-0 text-center" style="color: #48bddd">Direct</p>
+                    </div>
+                    <div class="col-md-4 col-sm-4 text-center pr-2">
+                      <p class="m-0">${legs[legs.length - 1][0]?.arrTime || "N/A"}</p>
+                      <p class="fw-bold m-0">${legs[legs.length - 1][0]?.dstApt || "N/A"}</p>
+                    </div>
+                  </div>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+        <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
+          <p class="m-0 fw-bold text-center">Price p.p</p>
+          <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;" class="price">${flight.adtSell}</span></p>
+          <div class="d-flex justify-content-center align-content-center pt-3">
+            <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">
+              Select <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+        // Insert content into the div
+        flightDiv.innerHTML = flightContent;
+
+        // Append to the container
+        container.appendChild(flightDiv);
+      });
+      // Fetch all elements with the class "price"
+      const prices = document.querySelectorAll(".price");
+
+      // Extract numeric values from the text content of the elements
+      const priceValues = Array.from(prices).map(priceElement => {
+        const priceText = priceElement.textContent.trim();
+        // Remove non-numeric characters and convert to a number
+        return parseFloat(priceText.replace(/[^0-9.]/g, "")) || 0;
       });
 
-      returnSlider.addEventListener("input", () => {
-        returnTime.textContent = `${formatTime(returnSlider.value)} - 23:59`;
-      });
+      if (priceValues.length > 0) {
+        // Calculate the lowest, highest, and average prices
+        const lowestPrice = Math.min(...priceValues);
+        const highestPrice = Math.max(...priceValues);
+        const averagePrice = (priceValues.reduce((a, b) => a + b, 0) / priceValues.length).toFixed(2);
 
-      durationSlider.addEventListener("input", () => {
-        durationTime.textContent = `${durationSlider.value} hours - 5.5 hours`;
-      });
-
-      selectAll.addEventListener("click", () => {
-        checkboxes.forEach((checkbox) => (checkbox.checked = true));
-      });
-
-      clearAll.addEventListener("click", () => {
-        checkboxes.forEach((checkbox) => (checkbox.checked = false));
-      });
+        // Insert values into the respective elements
+        document.getElementById("cheapestPrice").textContent = `AUD ${lowestPrice}`;
+        document.getElementById("averagePrice").textContent = `AUD ${averagePrice}`;
+        document.getElementById("highestPrice").textContent = `AUD ${highestPrice}`;
+      } else {
+        console.error("No prices found.");
+      }
     });
   </script>
 </body>
