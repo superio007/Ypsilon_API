@@ -592,178 +592,28 @@ session_start();
         <div class="col-md-6 my-2">
           <!-- price list -->
           <div class="row border rounded mb-2" style="background: #fff">
-            <div class="priceList col-md-4 col-sm-4 border-end p-2">
+            <div id="cheapest" class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Best</p>
-              <p class="m-0 fw-bold price">
-                ₹9,033 <i class="fa-solid fa-circle-info"></i>
+              <p class="m-0 fw-bold ">
+                <span id="cheapestPrice"></span> <i class="fa-solid fa-circle-info"></i>
               </p>
-              <p class="m-0">2h 15(average)</p>
             </div>
-            <div class="priceList col-md-4 col-sm-4 border-end p-2">
+            <div id="average" class="priceList col-md-4 col-sm-4 border-end p-2">
               <p class="m-0">Cheapest</p>
-              <p class="m-0 fw-bold price">₹8,865</p>
-              <p class="m-0">2h 10(average)</p>
+              <p class="m-0 fw-bold "><span id="averagePrice"></span></p>
             </div>
-            <div class="priceList col-md-4 col-sm-4 p-2">
+            <div id="highest" class="priceList col-md-4 col-sm-4 p-2">
               <p class="m-0">Fastest</p>
-              <p class="m-0 fw-bold price">₹15,046</p>
-              <p class="m-0">2h 03(average)</p>
+              <p class="m-0 fw-bold "><span id="highestPrice"></span></p>
             </div>
           </div>
-          <?php $index = 1;
-          foreach ($fares as $id):
-            $tarif = getTarifByFareId($responseData, $id);
-            $fareIdsPrimary = [];
-            $fareIdsSecondary = [];
-            $tarifIdsingle = getFirstFareId($id);
-            getSeperatedFlights($tarif, $fareIdsPrimary, $fareIdsSecondary, $tarifIdsingle);
-          ?>
-            <!-- flight div -->
-            <div class="flight-div mb-2 border rounded">
-              <div
-                class="py-1 px-2 d-flex justify-content-between align-items-center">
-                <p style="font-size: small; margin: 0; padding: 7px">
-                  This flight emits
-                  <span class="fw-bold">19% less CO2e</span> than a typical
-                  flight on this route <span><?php echo $id; ?></span>
-                </p>
-                <i class="fa-solid fa-circle-info fa-xs"></i>
-              </div>
-              <div
-                style="
-                  display: flex;
-                  padding: 10px 0;
-                  background-color: #fff;
-                  border-bottom-right-radius: 7px;
-                  border-bottom-left-radius: 7px;
-                ">
-                <div
-                  class="col-md-2 col-sm-2 gap-3" style="display: grid;">
-                  <img src="newUi/images/Alsaka air.png" alt="" />
-                  <img src="newUi/images/indigo.png" alt="" />
-                </div>
-                <div class="col-md-7 col-sm-7 border-end">
-                  <div>
-                    <p>Outbound</p>
-                    <?php foreach ($fareIdsPrimary as $fareId => $flights): ?>
-                      <div class="d-grid">
-                        <?php foreach ($flights as $flight):
-                          $legs = [];
-                          if (isset($flight['legs']) && is_array($flight['legs'])) {
-                            foreach ($flight['legs'] as $leg) {
-                              $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
-                              if (!empty($legData)) {
-                                $legs[] = $legData; // Add leg data to the array
-                              }
-                            }
-                          }
-
-                          if (!empty($legs)) {
-                            // Display flight details
-                        ?>
-                            <div class="d-flex align-items-center">
-                              <!-- Departure Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[0][0]['depTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt'] ?? 'N/A'; ?></p>
-                              </div>
-
-                              <!-- Duration and Flight Type -->
-                              <div class="col-md-4 col-sm-4">
-                                <p class="m-0 text-center"><?php echo $legs[0][0]['elapsed'] ?? 'N/A'; ?> hours</p>
-                                <div class="d-flex">
-                                  <p class="m-0">
-                                    ------
-                                    <svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
-                                      <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
-                                    </svg>
-                                  </p>
-                                </div>
-                                <p class="m-0 text-center" style="color: #48bddd"><?php echo count($legs) > 1 ? 'Direct' : 'One-way'; ?></p>
-                              </div>
-
-                              <!-- Arrival Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[1][0]['arrTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[1][0]['dstApt'] ?? 'N/A'; ?></p>
-                              </div>
-                            </div>
-                          <?php } else { ?>
-                            <p class="text-center m-0">No flights found</p>
-                        <?php }
-                        endforeach; ?>
-                      </div>
-                    <?php endforeach; ?>
-                  </div>
-
-
-
-                  <div>
-                    <p>Return</p>
-                    <?php foreach ($fareIdsSecondary as $fareId => $flights): ?>
-                      <div class="d-grid">
-                        <?php foreach ($flights as $flight):
-                          $legs = [];
-                          if (isset($flight['legs']) && is_array($flight['legs'])) {
-                            foreach ($flight['legs'] as $leg) {
-                              $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
-                              if (!empty($legData)) {
-                                $legs[] = $legData; // Add leg data to the array
-                              }
-                            }
-                          }
-
-                          if (!empty($legs)) {
-                            // Display flight details
-                        ?>
-                            <div class="d-flex align-items-center">
-                              <!-- Departure Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[0][0]['depTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt'] ?? 'N/A'; ?></p>
-                              </div>
-
-                              <!-- Duration and Flight Type -->
-                              <div class="col-md-4 col-sm-4">
-                                <p class="m-0 text-center"><?php echo $legs[0][0]['elapsed'] ?? 'N/A'; ?> hours</p>
-                                <div class="d-flex">
-                                  <p class="m-0">
-                                    ------
-                                    <svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
-                                      <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
-                                    </svg>
-                                  </p>
-                                </div>
-                                <p class="m-0 text-center" style="color: #48bddd"><?php echo count($legs) > 1 ? 'Direct' : 'One-way'; ?></p>
-                              </div>
-
-                              <!-- Arrival Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[1][0]['arrTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[1][0]['dstApt'] ?? 'N/A'; ?></p>
-                              </div>
-                            </div>
-                          <?php } else { ?>
-                            <p class="text-center m-0">No flights found</p>
-                        <?php }
-                        endforeach; ?>
-                      </div>
-                    <?php endforeach; ?>
-                  </div>
-                </div>
-                <div
-                  class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
-                  <p class="m-0 fw-bold text-center">Price p.p</p>
-                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;"><?php echo $tarif['@attributes']['adtSell'] + $tarif['@attributes']['adtTax']; ?></span></p>
-                  <button
-                    class="btn book-button px-3"
-                    style="background-color: #05203c; color: #fff">
-                    Select <i class="fa-solid fa-arrow-right"></i>
-                  </button>
-                </div>
+          <div id="flightResults" class="">
+            <div class="text-center" id="loader">
+              <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
               </div>
             </div>
-          <?php endforeach; ?>
+          </div>
         </div>
         <div class="col-md-2 d-md-block d-none">
           <img style="width: -webkit-fill-available;" src="newUi/images/BNPLRoadblock_150x1450.jpg" alt="" />
@@ -1034,56 +884,185 @@ session_start();
       });
     });
     document.addEventListener('DOMContentLoaded', function() {
-      var studentFaresRadio = document.getElementById('studentFares');
-      var previouslySelected = null;
+      const flightResultsContainer = document.getElementById("flightResults");
+      const loader = document.getElementById("loader");
 
-      studentFaresRadio.addEventListener('click', function(event) {
-        if (previouslySelected === this) {
-          this.checked = false;
-          previouslySelected = null;
-        } else {
-          previouslySelected = this;
-        }
-      });
-      const outboundSlider = document.getElementById("outboundSlider");
-      const returnSlider = document.getElementById("returnSlider");
-      const durationSlider = document.getElementById("durationSlider");
-      const outboundTime = document.getElementById("outboundTime");
-      const returnTime = document.getElementById("returnTime");
-      const durationTime = document.getElementById("durationTime");
-      const selectAll = document.getElementById("selectAll");
-      const clearAll = document.getElementById("clearAll");
-      const checkboxes = document.querySelectorAll(".form-check-input");
+      // Fetch flight data
+      fetch("fetch-flights.php")
+        .then((response) => response.text()) // Read the response as plain text
+        .then((text) => {
+          try {
+            const data = JSON.parse(text); // Attempt to parse the response as JSON
+            loader.style.display = "none";
 
-      function formatTime(value) {
-        const hours = Math.floor(value / 60);
-        const minutes = value % 60;
-        return `${hours.toString().padStart(2, "0")}:${minutes
-            .toString()
-            .padStart(2, "0")}`;
+            if (data.error) {
+              flightResultsContainer.innerHTML = `<p>${data.error}</p>`;
+              return;
+            }
+
+            // Generate flight results
+            data.forEach((flight) => {
+              console.log(flight);
+              const flightDiv = document.createElement("div");
+              flightDiv.className = "flight-div mb-2 border rounded";
+              flightDiv.innerHTML = `
+            <div class="py-1 px-2 d-flex justify-content-between align-items-center">
+              <p style="font-size: small; margin: 0; padding: 7px">
+                This flight emits <span class="fw-bold">19% less CO2e</span> than a typical flight on this route
+                <span>${flight.id}</span>
+              </p>
+              <i class="fa-solid fa-circle-info fa-xs"></i>
+            </div>
+            <div style="display: flex; padding: 10px 0; background-color: #fff; border-bottom-right-radius: 7px; border-bottom-left-radius: 7px;">
+              <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
+                <img src="newUi/images/Alsaka air.png" alt="Alaska Air" />
+                <img src="newUi/images/indigo.png" alt="Indigo" />
+              </div>
+              <div class="col-md-7 col-sm-7 border-end">
+                <p>Outbound</p>
+                ${renderFlights(flight.primary)}
+                <p>Return</p>
+                ${renderFlights(flight.secondary)}
+              </div>
+              <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
+                <p class="m-0 fw-bold text-center">Price p.p</p>
+                <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;" class="price">${flight.price}</span></p>
+                <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">Select <i class="fa-solid fa-arrow-right"></i></button>
+              </div>
+            </div>
+          `;
+              flightResultsContainer.appendChild(flightDiv);
+            });
+          } catch (error) {
+            loader.style.display = "none";
+            flightResultsContainer.innerHTML = `<p>Response is not valid JSON: ${error.message}</p>`;
+            console.error("Response text (not JSON):", text); // Log the invalid response
+          }
+        })
+        .catch((error) => {
+          loader.style.display = "none";
+          flightResultsContainer.innerHTML = `<p>Error loading flights: ${error.message}</p>`;
+        });
+
+      // Render flights function
+      function renderFlights(flightData) {
+        return Object.entries(flightData)
+          .map(
+            ([fareId, flights]) =>
+            `<div class="d-grid">
+            ${flights
+              .map(
+                (flight) => `
+                <div class="d-flex align-items-center">
+                  <div class="col-md-4 col-sm-4 text-center pr-2">
+                    <p class="m-0">${flight.legs[0]?.depTime || "N/A"}</p>
+                    <p class="fw-bold m-0">${flight.legs[0]?.depApt || "N/A"}</p>
+                  </div>
+                  <div class="col-md-4 col-sm-4">
+                    <p class="m-0 text-center">${flight.legs[0]?.elapsed || "N/A"} hours</p>
+                    <p class="m-0 text-center" style="color: #48bddd">${flights.length > 1 ? "Direct" : "One-way"}</p>
+                  </div>
+                  <div class="col-md-4 col-sm-4 text-center pr-2">
+                    <p class="m-0">${flight.legs[1]?.arrTime || "N/A"}</p>
+                    <p class="fw-bold m-0">${flight.legs[1]?.dstApt || "N/A"}</p>
+                  </div>
+                </div>`
+              )
+              .join("")}
+          </div>`
+          )
+          .join("");
       }
 
-      outboundSlider.addEventListener("input", () => {
-        outboundTime.textContent = `${formatTime(
+    const priceElements = document.querySelectorAll('.price');
+
+    // Initialize an array to store the prices
+    const prices = [];
+
+    // Loop through each element and extract the price
+    priceElements.forEach((priceElement) => {
+      const priceText = priceElement.textContent.trim(); // Get the text content
+      const priceValue = parseFloat(priceText.replace(/[^\d.]/g, '')); // Remove "AUD" and convert to a number
+
+      if (!isNaN(priceValue)) {
+        prices.push(priceValue); // Add the price to the array if it's valid
+      }
+    });
+
+    // Ensure there are prices to process
+    if (prices.length > 0) {
+      // Calculate the lowest price
+      const lowestPrice = Math.min(...prices);
+
+      // Calculate the highest price
+      const highestPrice = Math.max(...prices);
+
+      // Calculate the average price
+      const averagePrice =
+        prices.reduce((sum, price) => sum + price, 0) / prices.length;
+
+      // Update the respective span elements
+      document.getElementById('cheapestPrice').textContent = `₹ ${lowestPrice.toFixed(2)}`;
+      document.getElementById('highestPrice').textContent = `₹ ${highestPrice.toFixed(2)}`;
+      document.getElementById('averagePrice').textContent = `₹ ${averagePrice.toFixed(2)}`;
+
+      // Output the results in the console for debugging
+      console.log(`Lowest Price: ₹ ${lowestPrice.toFixed(2)}`);
+      console.log(`Highest Price: ₹ ${highestPrice.toFixed(2)}`);
+      console.log(`Average Price: ₹ ${averagePrice.toFixed(2)}`);
+    } else {
+      console.log('No prices found.');
+    }
+    var studentFaresRadio = document.getElementById('studentFares');
+    var previouslySelected = null;
+
+    studentFaresRadio.addEventListener('click', function(event) {
+      if (previouslySelected === this) {
+        this.checked = false;
+        previouslySelected = null;
+      } else {
+        previouslySelected = this;
+      }
+    });
+    const outboundSlider = document.getElementById("outboundSlider");
+    const returnSlider = document.getElementById("returnSlider");
+    const durationSlider = document.getElementById("durationSlider");
+    const outboundTime = document.getElementById("outboundTime");
+    const returnTime = document.getElementById("returnTime");
+    const durationTime = document.getElementById("durationTime");
+    const selectAll = document.getElementById("selectAll");
+    const clearAll = document.getElementById("clearAll");
+    const checkboxes = document.querySelectorAll(".form-check-input");
+
+    function formatTime(value) {
+      const hours = Math.floor(value / 60);
+      const minutes = value % 60;
+      return `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}`;
+    }
+
+    outboundSlider.addEventListener("input", () => {
+      outboundTime.textContent = `${formatTime(
             outboundSlider.value
           )} - 23:59`;
-      });
+    });
 
-      returnSlider.addEventListener("input", () => {
-        returnTime.textContent = `${formatTime(returnSlider.value)} - 23:59`;
-      });
+    returnSlider.addEventListener("input", () => {
+      returnTime.textContent = `${formatTime(returnSlider.value)} - 23:59`;
+    });
 
-      durationSlider.addEventListener("input", () => {
-        durationTime.textContent = `${durationSlider.value} hours - 5.5 hours`;
-      });
+    durationSlider.addEventListener("input", () => {
+      durationTime.textContent = `${durationSlider.value} hours - 5.5 hours`;
+    });
 
-      selectAll.addEventListener("click", () => {
-        checkboxes.forEach((checkbox) => (checkbox.checked = true));
-      });
+    selectAll.addEventListener("click", () => {
+      checkboxes.forEach((checkbox) => (checkbox.checked = true));
+    });
 
-      clearAll.addEventListener("click", () => {
-        checkboxes.forEach((checkbox) => (checkbox.checked = false));
-      });
+    clearAll.addEventListener("click", () => {
+    checkboxes.forEach((checkbox) => (checkbox.checked = false));
+    });
     });
   </script>
 </body>
