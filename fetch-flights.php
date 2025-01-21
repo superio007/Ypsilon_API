@@ -120,32 +120,6 @@ function getSeperatedFlights($tarif, &$fareIdsPrimary, &$fareIdsSecondary, $tari
     }
 }
 
-function searchLegById($filePath, $searchLegId)
-{
-    // Load the XML file
-    $xml = simplexml_load_string($filePath) or die("Unable to load XML file!");
-
-    // Convert SimpleXMLElement to JSON and decode to associative array for easier handling
-    $xmlArray = json_decode(json_encode($xml), true);
-
-    // Check if <legs> exists in the XML structure
-    if (!isset($xmlArray['legs']['leg'])) {
-        return [];
-    }
-
-    // Iterate through the <leg> elements
-    $legs = $xmlArray['legs']['leg'];
-    $matchingLegs = [];
-
-    foreach ($legs as $leg) {
-        // Check if the leg matches the searchLegId
-        if (isset($leg['@attributes']['legId']) && $leg['@attributes']['legId'] == $searchLegId) {
-            $matchingLegs[] = $leg['@attributes'];
-        }
-    }
-
-    return $matchingLegs; // Return all matching legs or empty if none found
-}
 
 function getFirstFareId($fareId)
 {

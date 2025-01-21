@@ -944,125 +944,178 @@ session_start();
           flightResultsContainer.innerHTML = `<p>Error loading flights: ${error.message}</p>`;
         });
 
-      // Render flights function
+      // Function to fetch flight leg details using Fetch API
+      function fetchFlightLegDetails(legId) {
+        return fetch('searchLeg.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              legId: legId
+            }), // Send legId as JSON
+          })
+          .then((response) => response.json()) // Parse the response as JSON
+          .catch((error) => {
+            console.error('Error fetching leg details:', error);
+            return null; // Return null if error occurs
+          });
+      }
+
+      // Function to render flights
       function renderFlights(flightData) {
         return Object.entries(flightData)
-          .map(
-            ([fareId, flights]) =>
-            `<div class="d-grid">
-            ${flights
-              .map(
-                (flight) => `
-                <div class="d-flex align-items-center">
-                  <div class="col-md-4 col-sm-4 text-center pr-2">
-                    <p class="m-0">${flight.legs[0]?.depTime || "N/A"}</p>
-                    <p class="fw-bold m-0">${flight.legs[0]?.depApt || "N/A"}</p>
-                  </div>
-                  <div class="col-md-4 col-sm-4">
-                    <p class="m-0 text-center">${flight.legs[0]?.elapsed || "N/A"} hours</p>
-                    <p class="m-0 text-center" style="color: #48bddd">${flights.length > 1 ? "Direct" : "One-way"}</p>
-                  </div>
-                  <div class="col-md-4 col-sm-4 text-center pr-2">
-                    <p class="m-0">${flight.legs[1]?.arrTime || "N/A"}</p>
-                    <p class="fw-bold m-0">${flight.legs[1]?.dstApt || "N/A"}</p>
-                  </div>
-                </div>`
-              )
-              .join("")}
-          </div>`
-          )
-          .join("");
+          .map(([fareId, flights]) => `
+      <div class="d-grid">
+        ${flights.map((flight) => `
+          <div class="d-flex align-items-center">
+            <div class="col-md-4 col-sm-4 text-center pr-2">
+              <p class="m-0">${flight.legs[0]?.depTime || "N/A"}</p>
+              <p class="fw-bold m-0">${flight.legs[0]?.depApt || "N/A"}</p>
+            </div>
+            <div class="col-md-4 col-sm-4">
+              <p class="m-0 text-center">${flight.legs[0]?.elapsed || "N/A"} hours</p>
+              <p class="m-0 text-center" style="color: #48bddd">${flights.length > 1 ? "Direct" : "One-way"}</p>
+            </div>
+            <div class="col-md-4 col-sm-4 text-center pr-2">
+              <p class="m-0">${flight.legs[1]?.arrTime || "N/A"}</p>
+              <p class="fw-bold m-0">${flight.legs[1]?.dstApt || "N/A"}</p>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `)
+          .join('');
       }
 
-    const priceElements = document.querySelectorAll('.price');
+      // Function to process flight data and fetch leg details
+      function processFlights(flightData) {
+        const allPromises = [];
 
-    // Initialize an array to store the prices
-    const prices = [];
+        // Loop through primary and secondary flight data
+        Object.entries(flightData).forEach(([fareId, flights]) => {
+          flights.forEach((flight) => {
+            flight.legs.forEach((leg) => {
+              allPromises.push(
+                fetchFlightLegDetails(leg.legId) // Fetch details for each leg
+              );
+            });
+          });
+        });
 
-    // Loop through each element and extract the price
-    priceElements.forEach((priceElement) => {
-      const priceText = priceElement.textContent.trim(); // Get the text content
-      const priceValue = parseFloat(priceText.replace(/[^\d.]/g, '')); // Remove "AUD" and convert to a number
+        // After all the AJAX calls are done, render the flights
+        Promise.all(allPromises)
+          .then((responses) => {
+            let i = 0;
+            Object.entries(flightData).forEach(([fareId, flights]) => {
+              flights.forEach((flight) => {
+                flight.legs.forEach((leg) => {
+                  // Fill the legs with the response data
+                  leg.details = responses[i]; // Assuming the response contains the detailed leg data
+                  i++;
+                });
+              });
+            });
 
-      if (!isNaN(priceValue)) {
-        prices.push(priceValue); // Add the price to the array if it's valid
+            // Now render the updated flight data
+            document.getElementById('flightResults').innerHTML = renderFlights(flightData);
+          })
+          .catch((error) => {
+            console.error("Error fetching flight data:", error);
+            flightResultsContainer.innerHTML = `<p>Failed to process flight data</p>`;
+          });
       }
-    });
 
-    // Ensure there are prices to process
-    if (prices.length > 0) {
-      // Calculate the lowest price
-      const lowestPrice = Math.min(...prices);
 
-      // Calculate the highest price
-      const highestPrice = Math.max(...prices);
+      const priceElements = document.querySelectorAll('.price');
 
-      // Calculate the average price
-      const averagePrice =
-        prices.reduce((sum, price) => sum + price, 0) / prices.length;
+      // Initialize an array to store the prices
+      const prices = [];
 
-      // Update the respective span elements
-      document.getElementById('cheapestPrice').textContent = `₹ ${lowestPrice.toFixed(2)}`;
-      document.getElementById('highestPrice').textContent = `₹ ${highestPrice.toFixed(2)}`;
-      document.getElementById('averagePrice').textContent = `₹ ${averagePrice.toFixed(2)}`;
+      // Loop through each element and extract the price
+      priceElements.forEach((priceElement) => {
+        const priceText = priceElement.textContent.trim(); // Get the text content
+        const priceValue = parseFloat(priceText.replace(/[^\d.]/g, '')); // Remove "AUD" and convert to a number
 
-      // Output the results in the console for debugging
-      console.log(`Lowest Price: ₹ ${lowestPrice.toFixed(2)}`);
-      console.log(`Highest Price: ₹ ${highestPrice.toFixed(2)}`);
-      console.log(`Average Price: ₹ ${averagePrice.toFixed(2)}`);
-    } else {
-      console.log('No prices found.');
-    }
-    var studentFaresRadio = document.getElementById('studentFares');
-    var previouslySelected = null;
+        if (!isNaN(priceValue)) {
+          prices.push(priceValue); // Add the price to the array if it's valid
+        }
+      });
 
-    studentFaresRadio.addEventListener('click', function(event) {
-      if (previouslySelected === this) {
-        this.checked = false;
-        previouslySelected = null;
+      // Ensure there are prices to process
+      if (prices.length > 0) {
+        // Calculate the lowest price
+        const lowestPrice = Math.min(...prices);
+
+        // Calculate the highest price
+        const highestPrice = Math.max(...prices);
+
+        // Calculate the average price
+        const averagePrice =
+          prices.reduce((sum, price) => sum + price, 0) / prices.length;
+
+        // Update the respective span elements
+        document.getElementById('cheapestPrice').textContent = `₹ ${lowestPrice.toFixed(2)}`;
+        document.getElementById('highestPrice').textContent = `₹ ${highestPrice.toFixed(2)}`;
+        document.getElementById('averagePrice').textContent = `₹ ${averagePrice.toFixed(2)}`;
+
+        // Output the results in the console for debugging
+        console.log(`Lowest Price: ₹ ${lowestPrice.toFixed(2)}`);
+        console.log(`Highest Price: ₹ ${highestPrice.toFixed(2)}`);
+        console.log(`Average Price: ₹ ${averagePrice.toFixed(2)}`);
       } else {
-        previouslySelected = this;
+        console.log('No prices found.');
       }
-    });
-    const outboundSlider = document.getElementById("outboundSlider");
-    const returnSlider = document.getElementById("returnSlider");
-    const durationSlider = document.getElementById("durationSlider");
-    const outboundTime = document.getElementById("outboundTime");
-    const returnTime = document.getElementById("returnTime");
-    const durationTime = document.getElementById("durationTime");
-    const selectAll = document.getElementById("selectAll");
-    const clearAll = document.getElementById("clearAll");
-    const checkboxes = document.querySelectorAll(".form-check-input");
+      var studentFaresRadio = document.getElementById('studentFares');
+      var previouslySelected = null;
 
-    function formatTime(value) {
-      const hours = Math.floor(value / 60);
-      const minutes = value % 60;
-      return `${hours.toString().padStart(2, "0")}:${minutes
+      studentFaresRadio.addEventListener('click', function(event) {
+        if (previouslySelected === this) {
+          this.checked = false;
+          previouslySelected = null;
+        } else {
+          previouslySelected = this;
+        }
+      });
+      const outboundSlider = document.getElementById("outboundSlider");
+      const returnSlider = document.getElementById("returnSlider");
+      const durationSlider = document.getElementById("durationSlider");
+      const outboundTime = document.getElementById("outboundTime");
+      const returnTime = document.getElementById("returnTime");
+      const durationTime = document.getElementById("durationTime");
+      const selectAll = document.getElementById("selectAll");
+      const clearAll = document.getElementById("clearAll");
+      const checkboxes = document.querySelectorAll(".form-check-input");
+
+      function formatTime(value) {
+        const hours = Math.floor(value / 60);
+        const minutes = value % 60;
+        return `${hours.toString().padStart(2, "0")}:${minutes
             .toString()
             .padStart(2, "0")}`;
-    }
+      }
 
-    outboundSlider.addEventListener("input", () => {
-      outboundTime.textContent = `${formatTime(
+      outboundSlider.addEventListener("input", () => {
+        outboundTime.textContent = `${formatTime(
             outboundSlider.value
           )} - 23:59`;
-    });
+      });
 
-    returnSlider.addEventListener("input", () => {
-      returnTime.textContent = `${formatTime(returnSlider.value)} - 23:59`;
-    });
+      returnSlider.addEventListener("input", () => {
+        returnTime.textContent = `${formatTime(returnSlider.value)} - 23:59`;
+      });
 
-    durationSlider.addEventListener("input", () => {
-      durationTime.textContent = `${durationSlider.value} hours - 5.5 hours`;
-    });
+      durationSlider.addEventListener("input", () => {
+        durationTime.textContent = `${durationSlider.value} hours - 5.5 hours`;
+      });
 
-    selectAll.addEventListener("click", () => {
-      checkboxes.forEach((checkbox) => (checkbox.checked = true));
-    });
+      selectAll.addEventListener("click", () => {
+        checkboxes.forEach((checkbox) => (checkbox.checked = true));
+      });
 
-    clearAll.addEventListener("click", () => {
-    checkboxes.forEach((checkbox) => (checkbox.checked = false));
-    });
+      clearAll.addEventListener("click", () => {
+        checkboxes.forEach((checkbox) => (checkbox.checked = false));
+      });
     });
   </script>
 </body>
