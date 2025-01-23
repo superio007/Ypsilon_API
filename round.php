@@ -14,6 +14,29 @@ session_start();
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <style>
+    .price-container {
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
+
+    .total-price {
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .price-per-person {
+      font-size: 18px;
+      font-weight: bold;
+      color: #000;
+      text-align: center;
+    }
+
+    .currency {
+      font-size: 12px;
+      font-weight: normal;
+      margin-left: 5px;
+    }
+
     .offer-card {
       border: 1px solid #ddd;
       border-radius: 8px;
@@ -645,116 +668,180 @@ session_start();
                 <div class="col-md-7 col-sm-7 border-end">
                   <div>
                     <p>Outbound</p>
-                    <?php foreach ($fareIdsPrimary as $fareId => $flights): ?>
-                      <div class="d-grid">
-                        <?php foreach ($flights as $flight):
-                          $legs = [];
-                          if (isset($flight['legs']) && is_array($flight['legs'])) {
-                            foreach ($flight['legs'] as $leg) {
-                              $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
-                              if (!empty($legData)) {
-                                $legs[] = $legData; // Add leg data to the array
-                              }
+                    <?php
+                    $iterationCount = 0; // Initialize counter
+                    foreach ($fareIdsPrimary as $fareId => $flights):
+                      foreach ($flights as $flight):
+                        if ($iterationCount >= 5) break; // Stop iteration after 5
+
+                        $legs = [];
+                        if (isset($flight['legs']) && is_array($flight['legs'])) {
+                          foreach ($flight['legs'] as $leg) {
+                            $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
+                            if (!empty($legData)) {
+                              $legs[] = $legData; // Add leg data to the array
                             }
                           }
+                        }
 
-                          if (!empty($legs)) {
-                            // Display flight details
-                        ?>
-                            <div class="d-flex align-items-center">
-                              <!-- Departure Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[0][0]['depTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt'] ?? 'N/A'; ?></p>
-                              </div>
-
-                              <!-- Duration and Flight Type -->
-                              <div class="col-md-4 col-sm-4">
-                                <p class="m-0 text-center"><?php echo $legs[0][0]['elapsed'] ?? 'N/A'; ?> hours</p>
-                                <div class="d-flex">
-                                  <p class="m-0">
-                                    ------
-                                    <svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
-                                      <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
-                                    </svg>
-                                  </p>
-                                </div>
-                                <p class="m-0 text-center" style="color: #48bddd"><?php echo count($legs) > 1 ? 'Direct' : 'One-way'; ?></p>
-                              </div>
-
-                              <!-- Arrival Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[1][0]['arrTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[1][0]['dstApt'] ?? 'N/A'; ?></p>
-                              </div>
+                        if (!empty($legs)) {
+                          $iterationCount++; // Increment counter
+                    ?>
+                          <div class="d-flex align-items-center">
+                            <!-- Departure Info -->
+                            <span><?php $lastNumber = count($legs) - 1; ?></span>
+                            <div class="col-md-4 col-sm-4 text-center pr-2">
+                              <p class="m-0"><?php echo $legs[0][0]['depTime'] ?? 'N/A'; ?></p>
+                              <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt'] ?? 'N/A'; ?></p>
                             </div>
-                          <?php } else { ?>
-                            <p class="text-center m-0">No flights found</p>
-                        <?php }
-                        endforeach; ?>
-                      </div>
-                    <?php endforeach; ?>
+
+                            <!-- Duration and Flight Type -->
+                            <div class="col-md-4 col-sm-4">
+                              <p class="m-0 text-center">
+                                <?php
+                                $totalDuration = 0;
+
+                                // Iterate through the legs
+                                foreach ($legs as $legArray) { // $legs contains arrays of leg data
+                                  foreach ($legArray as $leg) { // $legArray contains the individual leg data
+                                    if (isset($leg['elapsed'])) { // Ensure 'elapsed' key exists
+                                      $totalDuration += (float)$leg['elapsed']; // Add the elapsed time
+                                    }
+                                  }
+                                }
+
+                                echo $totalDuration > 0 ? $totalDuration . ' hours' : 'N/A';
+                                ?></p>
+                              <div class="d-flex">
+                                <p class="m-0">
+                                  ------
+                                  <svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
+                                    <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
+                                  </svg>
+                                </p>
+                              </div>
+                              <p class="m-0 text-center" style="color: #48bddd"><?php echo (count($legs) - 2) === 0 ? 'Direct' : (count($legs) - 2) . ' Stops'; ?></p>
+                            </div>
+
+                            <!-- Arrival Info -->
+                            <div class="col-md-4 col-sm-4 text-center pr-2">
+                              <p class="m-0"><?php echo $legs[$lastNumber][0]['arrTime'] ?? 'N/A'; ?></p>
+                              <p class="fw-bold m-0"><?php echo $legs[$lastNumber][0]['dstApt'] ?? 'N/A'; ?></p>
+                            </div>
+                          </div>
+                        <?php } else { ?>
+                          <p class="text-center m-0">No flights found</p>
+                    <?php }
+                      endforeach;
+                      if ($iterationCount >= 5) break; // Stop iteration after 5 flights
+                    endforeach;
+                    ?>
                   </div>
-
-
 
                   <div>
                     <p>Return</p>
-                    <?php foreach ($fareIdsSecondary as $fareId => $flights): ?>
-                      <div class="d-grid">
-                        <?php foreach ($flights as $flight):
-                          $legs = [];
-                          if (isset($flight['legs']) && is_array($flight['legs'])) {
-                            foreach ($flight['legs'] as $leg) {
-                              $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
-                              if (!empty($legData)) {
-                                $legs[] = $legData; // Add leg data to the array
-                              }
+                    <?php
+                    $iterationCount = 0; // Initialize counter
+                    foreach ($fareIdsSecondary as $fareId => $flights):
+                      foreach ($flights as $flight):
+                        if ($iterationCount >= 5) break; // Stop iteration after 5
+
+                        $legs = [];
+                        if (isset($flight['legs']) && is_array($flight['legs'])) {
+                          $MaxFLights = 5;
+                          foreach ($flight['legs'] as $leg) {
+                            $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
+                            if (!empty($legData)) {
+                              $legs[] = $legData;
                             }
                           }
+                        }
 
-                          if (!empty($legs)) {
-                            // Display flight details
-                        ?>
-                            <div class="d-flex align-items-center">
-                              <!-- Departure Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[0][0]['depTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt'] ?? 'N/A'; ?></p>
-                              </div>
-
-                              <!-- Duration and Flight Type -->
-                              <div class="col-md-4 col-sm-4">
-                                <p class="m-0 text-center"><?php echo $legs[0][0]['elapsed'] ?? 'N/A'; ?> hours</p>
-                                <div class="d-flex">
-                                  <p class="m-0">
-                                    ------
-                                    <svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
-                                      <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
-                                    </svg>
-                                  </p>
-                                </div>
-                                <p class="m-0 text-center" style="color: #48bddd"><?php echo count($legs) > 1 ? 'Direct' : 'One-way'; ?></p>
-                              </div>
-
-                              <!-- Arrival Info -->
-                              <div class="col-md-4 col-sm-4 text-center pr-2">
-                                <p class="m-0"><?php echo $legs[1][0]['arrTime'] ?? 'N/A'; ?></p>
-                                <p class="fw-bold m-0"><?php echo $legs[1][0]['dstApt'] ?? 'N/A'; ?></p>
-                              </div>
+                        if (!empty($legs)) {
+                          $iterationCount++; // Increment counter
+                    ?>
+                          <div class="d-flex align-items-center">
+                            <!-- Departure Info -->
+                            <span><?php $lastNumber = count($legs) - 1; ?></span>
+                            <div class="col-md-4 col-sm-4 text-center pr-2">
+                              <p class="m-0"><?php echo $legs[0][0]['depTime'] ?? 'N/A'; ?></p>
+                              <p class="fw-bold m-0"><?php echo $legs[0][0]['depApt'] ?? 'N/A'; ?></p>
                             </div>
-                          <?php } else { ?>
-                            <p class="text-center m-0">No flights found</p>
-                        <?php }
-                        endforeach; ?>
-                      </div>
-                    <?php endforeach; ?>
+
+                            <!-- Duration and Flight Type -->
+                            <div class="col-md-4 col-sm-4">
+                              <p class="m-0 text-center">
+                                <?php
+                                $totalDuration = 0;
+
+                                // Iterate through the legs
+                                foreach ($legs as $legArray) { // $legs contains arrays of leg data
+                                  foreach ($legArray as $leg) { // $legArray contains the individual leg data
+                                    if (isset($leg['elapsed'])) { // Ensure 'elapsed' key exists
+                                      $totalDuration += (float)$leg['elapsed']; // Add the elapsed time
+                                    }
+                                  }
+                                }
+
+                                echo $totalDuration > 0 ? $totalDuration . ' hours' : 'N/A';
+                                ?></p>
+                              <div class="d-flex">
+                                <p class="m-0">
+                                  ------
+                                  <svg style="width: 12px" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 12 12" class="LegInfo_planeEnd__ZGU5M">
+                                    <path fill="#898294" d="M3.922 12h.499a.52.52 0 0 0 .444-.247L7.949 6.8l3.233-.019A.8.8 0 0 0 12 6a.8.8 0 0 0-.818-.781L7.949 5.2 4.866.246A.525.525 0 0 0 4.421 0h-.499a.523.523 0 0 0-.489.71L5.149 5.2H2.296l-.664-1.33a.523.523 0 0 0-.436-.288L0 3.509 1.097 6 0 8.491l1.196-.073a.523.523 0 0 0 .436-.288l.664-1.33h2.853l-1.716 4.49a.523.523 0 0 0 .489.71"></path>
+                                  </svg>
+                                </p>
+                              </div>
+                              <p class="m-0 text-center" style="color: #48bddd"><?php echo (count($legs) - 2) === 0 || (count($legs) - 2) < 0 ? 'Direct' : (count($legs) - 2) . ' Stops'; ?></p>
+                            </div>
+
+                            <!-- Arrival Info -->
+                            <div class="col-md-4 col-sm-4 text-center pr-2">
+                              <p class="m-0"><?php echo $legs[$lastNumber][0]['arrTime'] ?? 'N/A'; ?></p>
+                              <p class="fw-bold m-0"><?php echo $legs[$lastNumber][0]['dstApt'] ?? 'N/A'; ?></p>
+                            </div>
+                          </div>
+                        <?php } else { ?>
+                          <p class="text-center m-0">No flights found</p>
+                    <?php }
+                      endforeach;
+                      if ($iterationCount >= 5) break; // Stop iteration after 5 flights
+                    endforeach;
+                    ?>
                   </div>
+
                 </div>
                 <div
                   class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
-                  <p class="m-0 fw-bold text-center">Price p.p</p>
-                  <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;"><?php echo $tarif['@attributes']['adtSell'] + $tarif['@attributes']['adtTax']; ?></span></p>
+
+                  <?php
+                  $adtsell = $tarif['@attributes']['adtSell'] + $tarif['@attributes']['adtTax'];
+                  $chdsell = $tarif['@attributes']['chdSell'] + $tarif['@attributes']['chdTax'];
+                  $infsell = $tarif['@attributes']['infSell'] + $tarif['@attributes']['infTax'];
+                  if ($adultsCount > 0 && $childrenCount > 0 && $infantsCount > 0) {
+                    $finalPrice = $adtsell * $adultsCount + $chdsell * $childrenCount + $infsel * $infantsCount;
+                  } else if ($adultsCount > 0 && $childrenCount > 0) {
+                    $finalPrice = $adtsell * $adultsCount + $chdsell * $childrenCount;
+                  } else if ($adultsCount > 0 && $infantsCount > 0) {
+                    $finalPrice = $adtsell * $adultsCount + $infsell * $infantsCount;
+                  } else {
+                    $finalPrice = $adtsell * $adultsCount;
+                  }
+                  ?>
+                  <div class="price-container">
+                    <div class="total-price text-center">
+                      Total price:
+                      <?php echo $adultsCount; ?> × Adults <?php if ($childrenCount > 0 || $infantsCount > 0) { echo ' + '; } ?>
+                      <?php if ($childrenCount > 0) { ?> <?php echo $childrenCount; ?> × Childs <?php if ($infantsCount > 0) { echo ' + '; }else{ echo '='; } ?> <?php } ?>
+                      <?php if ($infantsCount > 0) { ?> <?php echo $infantsCount; ?> × Infants = <?php } ?>
+                      <span><?php echo number_format($finalPrice, 2); ?></span> AUD
+                    </div>
+                    <p class="m-0 fw-bold text-center">Price p.p</p>
+                    <div class="price-per-person">
+                      <?php echo $tarif['@attributes']['adtSell'] + $tarif['@attributes']['adtTax']; ?><span class="currency">AUD</span>
+                    </div>
+                  </div>
                   <button
                     class="btn book-button px-3"
                     style="background-color: #05203c; color: #fff">

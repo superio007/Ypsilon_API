@@ -171,46 +171,46 @@ session_start();
       'total' => $total
     ];
   }
-  // For loading all flights 
-  // function getFlightsWithLegs($xmlData)
-  // {
-  //   // Load the XML data
-  //   $xml = simplexml_load_string($xmlData);
-  //   if ($xml === false) {
-  //     throw new Exception("Unable to load XML data: " . implode(", ", libxml_get_errors()));
-  //   }
+  function getFlightsWithLegs($xmlData)
+  {
+    // Load the XML data
+    $xml = simplexml_load_string($xmlData);
+    if ($xml === false) {
+      throw new Exception("Unable to load XML data: " . implode(", ", libxml_get_errors()));
+    }
 
-  //   // Initialize the result array
-  //   $flightsWithLegs = [];
+    // Initialize the result array
+    $flightsWithLegs = [];
 
-  //   // Step 1: Loop through all `tarif` elements to get fareId
-  //   foreach ($xml->xpath("//tarif") as $tarif) {
-  //     $fareId = (string)$tarif['tarifId'];
+    // Step 1: Loop through all `tarif` elements to get fareId
+    foreach ($xml->xpath("//tarif") as $tarif) {
+      $fareId = (string)$tarif['tarifId'];
 
-  //     // Step 2: Loop through all flights under the current fareId
-  //     foreach ($tarif->xpath("fareXRefs/fareXRef/flights/flight") as $flight) {
-  //       $flightId = (string)$flight['flightId'];
-  //       $legs = [];
+      // Step 2: Loop through all flights under the current fareId
+      foreach ($tarif->xpath("fareXRefs/fareXRef/flights/flight") as $flight) {
+        $flightId = (string)$flight['flightId'];
+        $legs = [];
 
-  //       // Step 3: Loop through all `legXRef` elements to get legId
-  //       foreach ($flight->xpath("legXRefs/legXRef") as $legXRef) {
-  //         $legId = (string)$legXRef['legId'];
+        // Step 3: Loop through all `legXRef` elements to get legId
+        foreach ($flight->xpath("legXRefs/legXRef") as $legXRef) {
+          $legId = (string)$legXRef['legId'];
 
-  //         // Step 4: Retrieve the <leg> element by legId
-  //         $legData = $xml->xpath("//leg[@legId='$legId']");
-  //         if (!empty($legData)) {
-  //           // Convert the <leg> element to an associative array
-  //           $legs[] = json_decode(json_encode($legData[0]), true)['@attributes'];
-  //         }
-  //       }
+          // Step 4: Retrieve the <leg> element by legId
+          $legData = $xml->xpath("//leg[@legId='$legId']");
+          if (!empty($legData)) {
+            // Convert the <leg> element to an associative array
+            $legs[] = json_decode(json_encode($legData[0]), true)['@attributes'];
+          }
+        }
 
-  //       // Step 5: Store flightId and its associated legs in the result array
-  //       $flightsWithLegs[$flightId] = $legs;
-  //     }
-  //   }
+        // Step 5: Store flightId and its associated legs in the result array
+        $flightsWithLegs[$flightId] = $legs;
+      }
+    }
 
-  //   return $flightsWithLegs;
-  // }
+    return $flightsWithLegs;
+  }
+  // To get flight Id from legId
   function getLegIdsByFlightId($fareXRefs, $flightId)
   {
     $legIds = []; // Array to store legIds
@@ -315,7 +315,45 @@ session_start();
     foreach ($xml->tarifs->tarif as $tarif) {
       if ((string)$tarif['tarifId'] === $tarifId) {
         // Return the adtSell value for the matched tarif
-        return (string)$tarif['adtSell'];
+        return (string)$tarif['adtSell'] + ['adtTax'];
+      }
+    }
+
+    return "Tarif ID {$tarifId} not found.";
+  }
+  function getchdSellByTarifId($tarifId, $xmlData)
+  {
+    // Load the XML data
+    $xml = simplexml_load_string($xmlData);
+
+    if (!$xml) {
+      return "Failed to load XML data.";
+    }
+
+    // Search for the tarif with the specified ID
+    foreach ($xml->tarifs->tarif as $tarif) {
+      if ((string)$tarif['tarifId'] === $tarifId) {
+        // Return the adtSell value for the matched tarif
+        return (string)$tarif['chdSell'] + ['chdTax'];
+      }
+    }
+
+    return "Tarif ID {$tarifId} not found.";
+  }
+  function getinfSellByTarifId($tarifId, $xmlData)
+  {
+    // Load the XML data
+    $xml = simplexml_load_string($xmlData);
+
+    if (!$xml) {
+      return "Failed to load XML data.";
+    }
+
+    // Search for the tarif with the specified ID
+    foreach ($xml->tarifs->tarif as $tarif) {
+      if ((string)$tarif['tarifId'] === $tarifId) {
+        // Return the adtSell value for the matched tarif
+        return (string)$tarif['infSell'] + ['infTax'];
       }
     }
 
