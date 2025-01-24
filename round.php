@@ -243,6 +243,7 @@ session_start();
     }
     function getSeperatedFlights($tarif, &$fareIdsPrimary, &$fareIdsSecondary, $tarifIdsingle)
     {
+      
       if ($tarif) {
         $fareId = $tarif['@attributes']['tarifId'] ?? 'N/A';
         $adtSell = $tarif['@attributes']['adtSell'] ?? 'N/A';
@@ -281,6 +282,7 @@ session_start();
 
                 foreach ($legXRefs as $legXRef) {
                   $legDetails = [
+                    'legxrefid' => $legXRef['@attributes']['legxrefid'] ?? 'N/A',
                     'legId' => $legXRef['@attributes']['legId'] ?? 'N/A',
                     'class' => $legXRef['@attributes']['class'] ?? 'N/A',
                     'cosDescription' => $legXRef['@attributes']['cosDescription'] ?? 'N/A',
@@ -669,12 +671,12 @@ session_start();
                   <div>
                     <p>Outbound</p>
                     <?php
-                    $iterationCount = 0; // Initialize counter
                     foreach ($fareIdsPrimary as $fareId => $flights):
+                      // var_dump($fareIdsPrimary);
                       foreach ($flights as $flight):
-                        if ($iterationCount >= 5) break; // Stop iteration after 5
 
                         $legs = [];
+                        
                         if (isset($flight['legs']) && is_array($flight['legs'])) {
                           foreach ($flight['legs'] as $leg) {
                             $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
@@ -683,9 +685,7 @@ session_start();
                             }
                           }
                         }
-
                         if (!empty($legs)) {
-                          $iterationCount++; // Increment counter
                     ?>
                           <div class="d-flex align-items-center">
                             <!-- Departure Info -->
@@ -733,7 +733,6 @@ session_start();
                           <p class="text-center m-0">No flights found</p>
                     <?php }
                       endforeach;
-                      if ($iterationCount >= 5) break; // Stop iteration after 5 flights
                     endforeach;
                     ?>
                   </div>
@@ -741,10 +740,8 @@ session_start();
                   <div>
                     <p>Return</p>
                     <?php
-                    $iterationCount = 0; // Initialize counter
                     foreach ($fareIdsSecondary as $fareId => $flights):
                       foreach ($flights as $flight):
-                        if ($iterationCount >= 5) break; // Stop iteration after 5
 
                         $legs = [];
                         if (isset($flight['legs']) && is_array($flight['legs'])) {
@@ -758,7 +755,6 @@ session_start();
                         }
 
                         if (!empty($legs)) {
-                          $iterationCount++; // Increment counter
                     ?>
                           <div class="d-flex align-items-center">
                             <!-- Departure Info -->
@@ -806,7 +802,7 @@ session_start();
                           <p class="text-center m-0">No flights found</p>
                     <?php }
                       endforeach;
-                      if ($iterationCount >= 5) break; // Stop iteration after 5 flights
+                       // Stop iteration after 5 flights
                     endforeach;
                     ?>
                   </div>
