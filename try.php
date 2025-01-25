@@ -1,42 +1,49 @@
 <?php
 session_start();
-$curl = curl_init();
-$depDate = "2025-02-24";
-$depApt = "MEL";
-$dstApt = "DEL";
-$returnDate = "2025-02-26";
+function getLegIdsByFlightId($fareXRefs, $flightId)
+{
+    $legIds = []; // Array to store legIds
 
-curl_setopt_array($curl, array(
-    CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_ENCODING => '',
-    CURLOPT_MAXREDIRS => 10,
-    CURLOPT_TIMEOUT => 0,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => 'POST',
-    CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs/><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="2025-03-26" dstApt="DEL" depApt="MEL"/><flight depDate="2025-04-09" dstApt="MEL" depApt="DEL"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1970-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>',
-    CURLOPT_HTTPHEADER => array(
-        'accept: application/xml',
-        'accept-encoding: gzip',
-        'api-version: 3.92',
-        'accessmode: agency',
-        'accessid: gaura gaura',
-        'authmode: pwd',
-        'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
-        'Content-Type: application/xml'
-    ),
-));
+    // Navigate to the flights array
+    if (isset($fareXRefs['fareXRefs']['fareXRef']['flights']['flight'])) {
+        $flights = $fareXRefs['fareXRefs']['fareXRef']['flights']['flight'];
 
-$response = curl_exec($curl);
-$_SESSION['responseData'] = $response;
-// Error handling
-if (curl_errno($curl)) {
-    echo 'cURL Error: ' . curl_error($curl);
-} else {
-    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    echo "HTTP Code: $httpCode\n";
-    var_dump($response);
+        // Check if we have multiple flights or a single flight
+        if (isset($flights[0])) {
+            // Multiple flights
+            foreach ($flights as $flight) {
+                if (isset($flight['@attributes']['flightId']) && $flight['@attributes']['flightId'] == $flightId) {
+                    // Collect legIds
+                    if (isset($flight['legXRefs']['legXRef'])) {
+                        foreach ($flight['legXRefs']['legXRef'] as $legRef) {
+                            if (isset($legRef['@attributes']['legId'])) {
+                                $legIds[] = $legRef['@attributes']['legId'];
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            // Single flight
+            if (isset($flights['@attributes']['flightId']) && $flights['@attributes']['flightId'] == $flightId) {
+                // Collect legIds
+                if (isset($flights['legXRefs']['legXRef'])) {
+                    foreach ($flights['legXRefs']['legXRef'] as $legRef) {
+                        if (isset($legRef['@attributes']['legId'])) {
+                            $legIds[] = $legRef['@attributes']['legId'];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return $legIds;
 }
 
-curl_close($curl);
+    // Example usage
+    $responseData = $_SESSION['responseData']; // Replace with your actual file path
+    $result = getLegIdsByFlightId($responseData, '838218061');
+    echo '<pre>';
+    var_dump($result);
+    echo '</pre>';

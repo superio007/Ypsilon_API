@@ -171,62 +171,78 @@ session_start();
       'total' => $total
     ];
   }
-  function getFlightsWithLegs($xmlData)
-  {
-    // Load the XML data
-    $xml = simplexml_load_string($xmlData);
-    if ($xml === false) {
-      throw new Exception("Unable to load XML data: " . implode(", ", libxml_get_errors()));
-    }
-
-    // Initialize the result array
-    $flightsWithLegs = [];
-
-    // Step 1: Loop through all `tarif` elements to get fareId
-    foreach ($xml->xpath("//tarif") as $tarif) {
-      $fareId = (string)$tarif['tarifId'];
-
-      // Step 2: Loop through all flights under the current fareId
-      foreach ($tarif->xpath("fareXRefs/fareXRef/flights/flight") as $flight) {
-        $flightId = (string)$flight['flightId'];
-        $legs = [];
-
-        // Step 3: Loop through all `legXRef` elements to get legId
-        foreach ($flight->xpath("legXRefs/legXRef") as $legXRef) {
-          $legId = (string)$legXRef['legId'];
-
-          // Step 4: Retrieve the <leg> element by legId
-          $legData = $xml->xpath("//leg[@legId='$legId']");
-          if (!empty($legData)) {
-            // Convert the <leg> element to an associative array
-            $legs[] = json_decode(json_encode($legData[0]), true)['@attributes'];
-          }
-        }
-
-        // Step 5: Store flightId and its associated legs in the result array
-        $flightsWithLegs[$flightId] = $legs;
+  isset($_SESSION['formData']);
+  if ($tripType === "oneway") {
+    // This is function is used to retrive all legs data Id available inside a flight
+    function getFlightsWithLegs($xmlData)
+    {
+      // Load the XML data
+      $xml = simplexml_load_string($xmlData);
+      if ($xml === false) {
+        throw new Exception("Unable to load XML data: " . implode(", ", libxml_get_errors()));
       }
+
+      // Initialize the result array
+      $flightsWithLegs = [];
+
+      // Step 1: Loop through all `tarif` elements to get fareId
+      foreach ($xml->xpath("//tarif") as $tarif) {
+        $fareId = (string)$tarif['tarifId'];
+
+        // Step 2: Loop through all flights under the current fareId
+        foreach ($tarif->xpath("fareXRefs/fareXRef/flights/flight") as $flight) {
+          $flightId = (string)$flight['flightId'];
+          $legs = [];
+
+          // Step 3: Loop through all `legXRef` elements to get legId
+          foreach ($flight->xpath("legXRefs/legXRef") as $legXRef) {
+            $legId = (string)$legXRef['legId'];
+
+            // Step 4: Retrieve the <leg> element by legId
+            $legData = $xml->xpath("//leg[@legId='$legId']");
+            if (!empty($legData)) {
+              // Convert the <leg> element to an associative array
+              $legs[] = json_decode(json_encode($legData[0]), true)['@attributes'];
+            }
+          }
+
+          // Step 5: Store flightId and its associated legs in the result array
+          $flightsWithLegs[$flightId] = $legs;
+        }
+      }
+
+      return $flightsWithLegs;
     }
+    // To retrive all legs Id available inside a flight
+    function getLegIdsByFlightId($fareXRefs, $flightId)
+    {
+      $legIds = []; // Array to store legIds
 
-    return $flightsWithLegs;
-  }
-  // To get flight Id from legId
-  function getLegIdsByFlightId($fareXRefs, $flightId)
-  {
-    $legIds = []; // Array to store legIds
+      // Navigate to the flights array
+      if (isset($fareXRefs['fareXRefs']['fareXRef']['flights']['flight'])) {
+        $flights = $fareXRefs['fareXRefs']['fareXRef']['flights']['flight'];
 
-    // Navigate to the flights array
-    if (isset($fareXRefs['fareXRefs']['fareXRef']['flights']['flight'])) {
-      $flights = $fareXRefs['fareXRefs']['fareXRef']['flights']['flight'];
-
-      // Check if we have multiple flights or a single flight
-      if (isset($flights[0])) {
-        // Multiple flights
-        foreach ($flights as $flight) {
-          if (isset($flight['@attributes']['flightId']) && $flight['@attributes']['flightId'] == $flightId) {
+        // Check if we have multiple flights or a single flight
+        if (isset($flights[0])) {
+          // Multiple flights
+          foreach ($flights as $flight) {
+            if (isset($flight['@attributes']['flightId']) && $flight['@attributes']['flightId'] == $flightId) {
+              // Collect legIds
+              if (isset($flight['legXRefs']['legXRef'])) {
+                foreach ($flight['legXRefs']['legXRef'] as $legRef) {
+                  if (isset($legRef['@attributes']['legId'])) {
+                    $legIds[] = $legRef['@attributes']['legId'];
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          // Single flight
+          if (isset($flights['@attributes']['flightId']) && $flights['@attributes']['flightId'] == $flightId) {
             // Collect legIds
-            if (isset($flight['legXRefs']['legXRef'])) {
-              foreach ($flight['legXRefs']['legXRef'] as $legRef) {
+            if (isset($flights['legXRefs']['legXRef'])) {
+              foreach ($flights['legXRefs']['legXRef'] as $legRef) {
                 if (isset($legRef['@attributes']['legId'])) {
                   $legIds[] = $legRef['@attributes']['legId'];
                 }
@@ -234,170 +250,173 @@ session_start();
             }
           }
         }
+      }
+
+      return $legIds;
+    }
+    // To retrive complete details of tarif by fareId 
+    function getTarifByFareId($responseData, $fareIdToMatch)
+    {
+      // Load XML from string
+      $xml = simplexml_load_string($responseData);
+      if ($xml === false) {
+        die("Failed to load XML: " . implode(", ", libxml_get_errors()));
+      }
+
+      // Initialize the result variable
+      $matchedTarif = null;
+
+      // Loop through all <tarif> elements
+      foreach ($xml->xpath("//tarif[@tarifId='$fareIdToMatch']") as $tarif) {
+        // Convert the matched <tarif> element to an array
+        $matchedTarif = json_decode(json_encode($tarif), true);
+        break; // Stop after finding the first match
+      }
+
+      // Return the matched tarif array or null if not found
+      return $matchedTarif;
+    }
+    // To get adtSell from tarifId with tax
+    function getAdtSellByTarifId($tarifId, $xmlData)
+    {
+      // Load the XML data
+      $xml = simplexml_load_string($xmlData);
+
+      if (!$xml) {
+        return "Failed to load XML data.";
+      }
+
+      // Search for the tarif with the specified ID
+      foreach ($xml->tarifs->tarif as $tarif) {
+        if ((string)$tarif['tarifId'] === $tarifId) {
+          // Return the adtSell value for the matched tarif
+          return (string)$tarif['adtSell'] + ['adtTax'];
+        }
+      }
+
+      return "Tarif ID {$tarifId} not found.";
+    }
+    // To get chdSell from tarifId with tax
+    function getchdSellByTarifId($tarifId, $xmlData)
+    {
+      // Load the XML data
+      $xml = simplexml_load_string($xmlData);
+
+      if (!$xml) {
+        return "Failed to load XML data.";
+      }
+
+      // Search for the tarif with the specified ID
+      foreach ($xml->tarifs->tarif as $tarif) {
+        if ((string)$tarif['tarifId'] === $tarifId) {
+          // Return the adtSell value for the matched tarif
+          return (string)$tarif['chdSell'] + ['chdTax'];
+        }
+      }
+
+      return "Tarif ID {$tarifId} not found.";
+    }
+    // To get infSell from tarifId with tax
+    function getinfSellByTarifId($tarifId, $xmlData)
+    {
+      // Load the XML data
+      $xml = simplexml_load_string($xmlData);
+
+      if (!$xml) {
+        return "Failed to load XML data.";
+      }
+
+      // Search for the tarif with the specified ID
+      foreach ($xml->tarifs->tarif as $tarif) {
+        if ((string)$tarif['tarifId'] === $tarifId) {
+          // Return the adtSell value for the matched tarif
+          return (string)$tarif['infSell'] + ['infTax'];
+        }
+      }
+
+      return "Tarif ID {$tarifId} not found.";
+    }
+    // This function is to used to retrive combined array of legs to load flights in flight div
+    function searchLegById($filePath, $searchLegId)
+    {
+      // Load the XML file
+      $xml = simplexml_load_string($filePath) or die("Unable to load XML file!");
+
+      // Convert SimpleXMLElement to JSON and decode to associative array for easier handling
+      $xmlArray = json_decode(json_encode($xml), true);
+
+      // Check if <legs> exists in the XML structure
+      if (!isset($xmlArray['legs']['leg'])) {
+        return "No <legs> found in the XML.";
+      }
+
+      // Iterate through the <leg> elements
+      $legs = $xmlArray['legs']['leg'];
+      $matchingLegs = [];
+
+      foreach ($legs as $leg) {
+        // Check if the leg matches the searchLegId
+        if (
+          isset($leg['@attributes']['legId']) && $leg['@attributes']['legId'] == $searchLegId
+        ) {
+          $matchingLegs[] = $leg['@attributes'];
+        }
+      }
+
+      // Return the matching legs or a message if none found
+      if (!empty($matchingLegs)) {
+        return $matchingLegs;
       } else {
-        // Single flight
-        if (isset($flights['@attributes']['flightId']) && $flights['@attributes']['flightId'] == $flightId) {
-          // Collect legIds
-          if (isset($flights['legXRefs']['legXRef'])) {
-            foreach ($flights['legXRefs']['legXRef'] as $legRef) {
-              if (isset($legRef['@attributes']['legId'])) {
-                $legIds[] = $legRef['@attributes']['legId'];
-              }
-            }
-          }
-        }
+        return "No matching legs found for legId: $searchLegId.";
       }
     }
-
-    return $legIds;
-  }
-  // To get flight Id from legId
-  function getFareIdFromLegId($legId, $response)
-  {
-
-
-    if (!$response) {
-      return "No XML data found in session.";
-    }
-
-    // Parse the XML data
-    $xmlData = simplexml_load_string($response);
-
-    if (!$xmlData) {
-      return "Failed to parse XML data.";
-    }
-
-    // Navigate the XML structure to match the legId
-    foreach ($xmlData->xpath('//tarifs/tarif') as $tarif) {
-      $fareId = (string)$tarif->fareXRefs->fareXRef['fareId']; // Get fare ID from attribute
-      foreach ($tarif->xpath('./fareXRefs/fareXRef/flights/flight/legXRefs/legXRef') as $legXRef) {
-        if ((string)$legXRef['legId'] === $legId) {
-          return $fareId; // Return fareId if a match is found
-        }
-      }
-    }
-
-    // Return message if no matching fareId is found
-    return "No Fare ID found for leg ID $legId.";
-  }
-  function getTarifByFareId($responseData, $fareIdToMatch)
-  {
-    // Load XML from string
-    $xml = simplexml_load_string($responseData);
-    if ($xml === false) {
-      die("Failed to load XML: " . implode(", ", libxml_get_errors()));
-    }
-
-    // Initialize the result variable
-    $matchedTarif = null;
-
-    // Loop through all <tarif> elements
-    foreach ($xml->xpath("//tarif[@tarifId='$fareIdToMatch']") as $tarif) {
-      // Convert the matched <tarif> element to an array
-      $matchedTarif = json_decode(json_encode($tarif), true);
-      break; // Stop after finding the first match
-    }
-
-    // Return the matched tarif array or null if not found
-    return $matchedTarif;
-  }
-  // To get adtSell from tarifId
-  function getAdtSellByTarifId($tarifId, $xmlData)
-  {
-    // Load the XML data
-    $xml = simplexml_load_string($xmlData);
-
-    if (!$xml) {
-      return "Failed to load XML data.";
-    }
-
-    // Search for the tarif with the specified ID
-    foreach ($xml->tarifs->tarif as $tarif) {
-      if ((string)$tarif['tarifId'] === $tarifId) {
-        // Return the adtSell value for the matched tarif
-        return (string)$tarif['adtSell'] + ['adtTax'];
-      }
-    }
-
-    return "Tarif ID {$tarifId} not found.";
-  }
-  function getchdSellByTarifId($tarifId, $xmlData)
-  {
-    // Load the XML data
-    $xml = simplexml_load_string($xmlData);
-
-    if (!$xml) {
-      return "Failed to load XML data.";
-    }
-
-    // Search for the tarif with the specified ID
-    foreach ($xml->tarifs->tarif as $tarif) {
-      if ((string)$tarif['tarifId'] === $tarifId) {
-        // Return the adtSell value for the matched tarif
-        return (string)$tarif['chdSell'] + ['chdTax'];
-      }
-    }
-
-    return "Tarif ID {$tarifId} not found.";
-  }
-  function getinfSellByTarifId($tarifId, $xmlData)
-  {
-    // Load the XML data
-    $xml = simplexml_load_string($xmlData);
-
-    if (!$xml) {
-      return "Failed to load XML data.";
-    }
-
-    // Search for the tarif with the specified ID
-    foreach ($xml->tarifs->tarif as $tarif) {
-      if ((string)$tarif['tarifId'] === $tarifId) {
-        // Return the adtSell value for the matched tarif
-        return (string)$tarif['infSell'] + ['infTax'];
-      }
-    }
-
-    return "Tarif ID {$tarifId} not found.";
-  }
-  function searchLegById($filePath, $searchLegId)
-  {
-    // Load the XML file
-    $xml = simplexml_load_string($filePath) or die("Unable to load XML file!");
-
-    // Convert SimpleXMLElement to JSON and decode to associative array for easier handling
-    $xmlArray = json_decode(json_encode($xml), true);
-
-    // Check if <legs> exists in the XML structure
-    if (!isset($xmlArray['legs']['leg'])) {
-      return "No <legs> found in the XML.";
-    }
-
-    // Iterate through the <leg> elements
-    $legs = $xmlArray['legs']['leg'];
-    $matchingLegs = [];
-
-    foreach ($legs as $leg) {
-      // Check if the leg matches the searchLegId
+    //  To generate fares ID for external delivery loads and to retrieve fare details.
+    function getFares($responseData){
+      libxml_use_internal_errors(true);
+      $xml = simplexml_load_string($responseData);
       if (
-        isset($leg['@attributes']['legId']) && $leg['@attributes']['legId'] == $searchLegId
+        $xml === false
       ) {
-        $matchingLegs[] = $leg['@attributes'];
+        echo "Failed to parse XML. Errors:\n";
+        foreach (libxml_get_errors() as $error) {
+          echo $error->message, "\n";
+        }
+        libxml_clear_errors();
+        exit;
       }
-    }
 
-    // Return the matching legs or a message if none found
-    if (!empty($matchingLegs)) {
-      return $matchingLegs;
-    } else {
-      return "No matching legs found for legId: $searchLegId.";
+      // Register namespaces for elements with prefixes
+      $xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
+
+      $fares = [];
+      $fareId = [];
+      foreach ($xml->fares->fare as $fare) {
+        $fareId[] = (string)$fare['fareId']; // Access fareId attribute
+        $namespaces = $fare->getNamespaces(true);
+        $fares[] = [
+          'fareId' => (string)$fare['fareId'],
+          'shared:fareType' => (string)$fare->children('shared', true)->fareType,
+          'class' => (string)$fare['class'],
+          'paxType' => (string)$fare['paxType'],
+          'depApt' => (string)$fare['depApt'],
+          'dstApt' => (string)$fare['dstApt'],
+          'cos' => (string)$fare['cos'],
+          'yyFare' => (string)$fare['yyFare'],
+          'date' => (string)$fare['date'],
+          'dfcConso' => (string)$fare['dfcConso'],
+          'dfcAgent' => (string)$fare['dfcAgent'],
+          'ticketTimelimit' => (string)$fare['ticketTimelimit'],
+
+          'shared:vcr' => (string)$fare->attributes($namespaces['shared'])->vcr,
+        ];
+      }
+      return [$fares, $fareId];
     }
-  }
-  isset($_SESSION['formData']);
-  if ($tripType === "oneway") {
     $curl = curl_init();
     $depDate = $departureDate;
     $depApt = $departFrom;
     $dstApt = $flyingTo;
+    $postFields = "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"2025-02-12\" dstApt=\"DEL\" depApt=\"MEL\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1945-12-12\"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>";
     curl_setopt_array($curl, array(
       CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
       CURLOPT_RETURNTRANSFER => true,
@@ -407,7 +426,7 @@ session_start();
       CURLOPT_FOLLOWLOCATION => true,
       CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
       CURLOPT_CUSTOMREQUEST => 'POST',
-      CURLOPT_POSTFIELDS => '<?xml version=\'1.0\' encoding=\'UTF-8\'?><fareRequest xmlns:shared="http://ypsilon.net/shared" da="true"><vcrs><vcr>QF</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate="' . $depDate . '" dstApt="' . $dstApt . '" depApt="' . $depApt . '"/></flights><paxes><pax gender="M" surname="Klenz" firstname="Hans A ADT" dob="1945-12-12"/></paxes><paxTypes/><options><limit>20</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses/></fareRequest>',
+      CURLOPT_POSTFIELDS => $postFields,
       CURLOPT_HTTPHEADER => array(
         'accept: application/xml',
         'accept-encoding: gzip',
@@ -421,7 +440,9 @@ session_start();
         'Content-Type: text/plain'
       ),
     ));
+    // var_dump($postFields);
     $responseData = curl_exec($curl);
+    var_dump($responseData);
     $_SESSION['responseData'] = $responseData;
     if ($responseData === false) {
       echo 'cURL Error: ' . curl_error($curl);
@@ -429,101 +450,8 @@ session_start();
       exit;
     }
 
-    libxml_use_internal_errors(true);
-    $xml = simplexml_load_string($responseData);
-    if (
-      $xml === false
-    ) {
-      echo "Failed to parse XML. Errors:\n";
-      foreach (libxml_get_errors() as $error) {
-        echo $error->message, "\n";
-      }
-      libxml_clear_errors();
-      exit;
-    }
-
-    // Register namespaces for elements with prefixes
-    $xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
-
-    $fareId = [];
-    foreach ($xml->fares->fare as $fare) {
-      $fareId[] = (string)$fare['fareId']; // Access fareId attribute
-      $fares[] = [
-        'fareId' => (string)$fare['fareId'],
-        'shared:fareType' => (string)$fare->children('shared', true)->fareType,
-        'depApt' => (string)$fare['depApt'],
-        'dstApt' => (string)$fare['dstApt'],
-        'shared:vcr' => (string)$fare->children('shared', true)->vcr,
-      ];
-    }
-
+    list($fares, $fareId) = getFares($responseData);
     curl_close($curl);
-  }
-  if ($tripType === "roundtrip") {
-    $curl = curl_init();
-    $depDate = $departureDate;
-    $depApt = $departFrom;
-    $dstApt = $flyingTo;
-    $returndate = $returnDate;
-    $postfields = "<?xml version='1.0' encoding='UTF-8'?><fareRequest xmlns:shared=\"http://ypsilon.net/shared\" da=\"true\"><vcrs><vcr>SQ</vcr></vcrs><alliances/><shared:fareTypes/><tourOps/><flights><flight depDate=\"$depDate\" dstApt=\"$depApt\" depApt=\"$dstApt\"/><flight depDate=\"$returndate\" dstApt=\"$dstApt\" depApt=\"$depApt\"/></flights><paxes><pax gender=\"M\" surname=\"Klenz\" firstname=\"Hans A ADT\" dob=\"1970-12-12\"/></paxes><paxTypes/><options><limit>1</limit><offset>0</offset><vcrSummary>false</vcrSummary><waitOnList><waitOn>ALL</waitOn></waitOnList></options><coses><cos>E</cos></coses><agentCodes><agentCode>gaura</agentCode></agentCodes><directFareConsos><directFareConso>gaura</directFareConso></directFareConsos></fareRequest>";
-    // echo "<script>alert('$postfields');</script>";
-    curl_setopt_array($curl, array(
-      CURLOPT_URL => 'http://xmlapiv3.ypsilon.net:10816',
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_ENCODING => '',
-      CURLOPT_MAXREDIRS => 10,
-      CURLOPT_TIMEOUT => 0,
-      CURLOPT_FOLLOWLOCATION => true,
-      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-      CURLOPT_CUSTOMREQUEST => 'POST',
-      CURLOPT_POSTFIELDS => $postfields,
-      CURLOPT_HTTPHEADER => array(
-        'accept: application/xml',
-        'accept-encoding: gzip',
-        'api-version: 3.92',
-        'accessmode: agency',
-        'accessid: gaura gaura',
-        'authmode: pwd',
-        'authorization: Basic c2hlbGx0ZWNoOjRlNDllOTAxMGZhYzA1NzEzN2VjOWQ0NWZjNTFmNDdh',
-        'Content-Type: application/xml'
-      ),
-    ));
-
-    $responseData = curl_exec($curl);
-    $_SESSION['responseData'] = $responseData;
-    if ($responseData === false) {
-      echo 'cURL Error: ' . curl_error($curl);
-      curl_close($curl);
-      exit;
-    }
-
-    libxml_use_internal_errors(true);
-    $xml = simplexml_load_string($responseData);
-    if (
-      $xml === false
-    ) {
-      echo "Failed to parse XML. Errors:\n";
-      foreach (libxml_get_errors() as $error) {
-        echo $error->message, "\n";
-      }
-      libxml_clear_errors();
-      exit;
-    }
-
-    // Register namespaces for elements with prefixes
-    $xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
-
-    $fareId = [];
-    foreach ($xml->fares->fare as $fare) {
-      $fareId[] = (string)$fare['fareId']; // Access fareId attribute
-      $fares[] = [
-        'fareId' => (string)$fare['fareId'],
-        'shared:fareType' => (string)$fare->children('shared', true)->fareType,
-        'depApt' => (string)$fare['depApt'],
-        'dstApt' => (string)$fare['dstApt'],
-        'shared:vcr' => (string)$fare->children('shared', true)->vcr,
-      ];
-    }
   }
   ?>
   <div class="container my-5">
@@ -636,8 +564,8 @@ session_start();
     </div>
   </div>
   <?php if (isset($responseData)): ?>
-    <div class="container-md">
-      <div class="row">
+    <div class="container-md ypsilonapi">
+      <div class="row" style="margin-top:0px;">
         <!-- Filter -->
         <div class="col-md-3">
           <div class="search-div my-4">
@@ -682,24 +610,7 @@ session_start();
 
           </div>
         </div>
-        <div class="col-md-6 my-2">
-          <!-- price list -->
-          <div class="row border rounded mb-2" style="background: #fff">
-            <div id="cheapest" class="priceList col-md-4 col-sm-4 border-end p-2">
-              <p class="m-0">Best</p>
-              <p class="m-0 fw-bold ">
-                <span id="cheapestPrice"></span> <i class="fa-solid fa-circle-info"></i>
-              </p>
-            </div>
-            <div id="average" class="priceList col-md-4 col-sm-4 border-end p-2">
-              <p class="m-0">Cheapest</p>
-              <p class="m-0 fw-bold "><span id="averagePrice"></span></p>
-            </div>
-            <div id="highest" class="priceList col-md-4 col-sm-4 p-2">
-              <p class="m-0">Fastest</p>
-              <p class="m-0 fw-bold "><span id="highestPrice"></span></p>
-            </div>
-          </div>
+        <div class="col-md-9">
           <div>
             <div>
               <div id="flightResults">
@@ -712,6 +623,7 @@ session_start();
           $flightsData = [];
           $index = 1;
           foreach ($fares as $id) {
+            var_dump($fares);
             $fareXRef = getTarifByFareId($responseData, $id['fareId']);
             $flights = isset($fareXRef['fareXRefs']['fareXRef']['flights']['flight'][0])
               ? $fareXRef['fareXRefs']['fareXRef']['flights']['flight']
@@ -719,6 +631,7 @@ session_start();
 
             $legsInfo = [];
             foreach ($flights as $flight) {
+              var_dump($flight);
               $flightId = $flight["@attributes"]["flightId"];
               $legIds = getLegIdsByFlightId($fareXRef, $flightId);
               $legs = [];
@@ -726,11 +639,38 @@ session_start();
                 $legs[] = searchLegById($responseData, $legId);
               }
               $legsInfo[] = $legs;
+              // var_dump($legsInfo);
             }
-
+            $adtsell = $fareXRef['@attributes']['adtSell'] + $fareXRef['@attributes']['adtTax'];
+            $chdsell = $fareXRef['@attributes']['chdSell'] + $fareXRef['@attributes']['chdTax'];
+            $infsell = $fareXRef['@attributes']['infSell'] + $fareXRef['@attributes']['infTax'];
+            if ($adultsCount > 0 && $childrenCount > 0 && $infantsCount > 0) {
+              $finalPrice = ($adtsell * $adultsCount)  + ($chdsell * $childrenCount) + ($infsel * $infantsCount);
+            } else if ($adultsCount > 0 && $childrenCount > 0 && $infantsCount == 0) {
+              $finalPrice = ($adtsell * $adultsCount) + ($chdsell * $childrenCount);
+            } else if ($adultsCount > 0 && $childrenCount == 0  && $infantsCount > 0) {
+              $finalPrice = ($adtsell * $adultsCount) + ($infsell * $infantsCount);
+            } else {
+              $finalPrice = $adtsell * $adultsCount;
+            }
             $flightsData[] = [
               'fareId' => $id['fareId'],
-              'adtSell' => $fareXRef["@attributes"]["adtSell"],
+              'vcrcode' => $id['shared:vcr'],
+              'price' => [
+                'adt' => [
+                  'price' => $adtsell,
+                  'count' => $adultsCount
+                ],
+                'chd' => [
+                  'price' => $chdsell,
+                  'count' => $childrenCount
+                ],
+                'inf' => [
+                  'price' => $infsell,
+                  'count' => $infantsCount
+                ]
+              ],
+              'adtSell' => number_format((float)$finalPrice, 2, '.', ''),
               'legs' => $legsInfo,
             ];
           }
@@ -739,6 +679,7 @@ session_start();
           <script>
             // Pass the PHP array to JavaScript as JSON
             const flightsData = <?php echo json_encode($flightsData); ?>;
+            console.log(flightsData);
           </script>
 
         </div>
@@ -749,35 +690,8 @@ session_start();
     </div>
   <?php endif; ?>
   <script>
+    // This function is only required on local remove this on live
     $(document).ready(function() {
-      // Select all buttons with a data-btn attribute
-      const buttons = $("[data-btn]");
-
-      // Variable to track the currently visible view
-      let activeView = null;
-
-      // Attach click event listener to each button
-      buttons.on("click", function() {
-        // Get the value of the data-btn attribute
-        const target = $(this).attr("data-btn");
-
-        // Find the corresponding data-view element
-        const view = $(`[data-view="${target}"]`);
-
-        // If the view element exists
-        if (view.length) {
-          // Hide the previously active view if it exists and is not the same as the current view
-          if (activeView && activeView[0] !== view[0]) {
-            activeView.addClass("d-none");
-          }
-
-          // Toggle the visibility of the current view
-          view.toggleClass("d-none");
-
-          // Update the active view (or set to null if the current view is hidden)
-          activeView = view.hasClass("d-none") ? null : view;
-        }
-      });
       // Cities array
       var cities = [{
           label: "Mumbai",
@@ -997,19 +911,7 @@ session_start();
         $('#returnDate').prop('disabled', false);
       }
     });
-    $(document).ready(function() {
-      $(document).on('click', '.price-breakdown', function() {
-        var index = $(this).data('index');
-        var content = $('#price-breakdown-' + index);
-        if (content.css('display') === 'none' || content.css('display') === '') {
-          content.css('display', 'block');
-          $(this).text('- HIDE PRICE BREAKDOWN');
-        } else {
-          content.css('display', 'none');
-          $(this).text('+ DISPLAY PRICE BREAKDOWN');
-        }
-      });
-    });
+
     document.addEventListener('DOMContentLoaded', function() {
       const container = document.getElementById("flightResults");
       const outboundSlider = document.getElementById("outboundSlider");
@@ -1055,57 +957,84 @@ session_start();
         // Clear existing content
         container.innerHTML = "";
 
-        // Loop through the flights data and render
         data.forEach((flight, index) => {
           const flightDiv = document.createElement("div");
           flightDiv.className = "flight-div mb-2 border rounded";
+          let textVCR = flight.vcrcode;
+          let lowerVCR = textVCR.toLowerCase();
 
           const flightContent = `
-        <div class="py-1 px-2 d-flex justify-content-between align-items-center">
-          <p style="font-size: small; margin: 0; padding: 7px">
-            This flight emits <span class="fw-bold">19% less CO2e</span> than a typical flight
-            on this route <span>${index + 1} FareId: ${flight.fareId}</span>
-          </p>
-          <i class="fa-solid fa-circle-info fa-xs"></i>
-        </div>
-        <div style="display: flex; padding: 10px 0; background-color: #fff;">
-          <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
-            <img src="newUi/images/Alsaka air.png" alt="" />
-            <img src="newUi/images/indigo.png" alt="" />
-          </div>
-          <div class="col-md-7 col-sm-7 border-end">
-            ${flight.legs
-              .map(
-                (legs) => `
-                <div class="d-grid">
-                  <div class="d-flex align-items-center">
-                    <div class="col-md-4 col-sm-4 text-center pr-2">
-                      <p class="m-0">${legs[0][0]?.depTime || "N/A"}</p>
-                      <p class="fw-bold m-0">${legs[0][0]?.depApt || "N/A"}</p>
+                    <div class="py-1 px-2 d-flex justify-content-between align-items-center">
+                      <p style="font-size: small; margin: 0; padding: 7px">
+                        This flight emits <span class="fw-bold">19% less CO2e</span> than a typical flight
+                        on this route <span>${index + 1} FareId: ${flight.fareId}</span>
+                      </p>
+                      <i class="fa-solid fa-circle-info fa-xs"></i>
                     </div>
-                    <div class="col-md-4 col-sm-4">
-                      <p class="m-0 text-center">${legs[0][0]?.elapsed || "N/A"}</p>
-                      <p class="m-0 text-center" style="color: #48bddd">Direct</p>
+                    <div style="display: flex; padding: 10px 0; background-color: #fff;">
+                      <div class="col-md-2 col-sm-2 gap-3" style="display: grid;">
+                        <img src="https://gauratravel.com.au/wp-content/uploads/2025/01/${lowerVCR}.gif" alt="" />${flight.vcrcode}
+                      </div>
+                      <div class="col-md-7 col-sm-7 align-content-center border-end">
+                        ${flight.legs
+                          .map((legs) => `
+        ${console.log(count(legs))}
+                            <div class="d-grid">
+                              <div class="d-flex align-items-center">
+                                <div class="col-md-4 col-sm-4 text-center pr-2">
+                                  <p class="m-0">${legs[0][0]?.depTime || "N/A"}</p>
+                                  <p class="fw-bold m-0">${legs[0][0]?.depApt || "N/A"}</p>
+                                </div>
+                                <div class="col-md-4 col-sm-4">
+                                  <p class="m-0 text-center">${legs[0][0]?.elapsed || "N/A"}</p>
+                                  <p class="m-0 text-center" style="color: #48bddd">Direct</p>
+                                </div>
+                                <div class="col-md-4 col-sm-4 text-center pr-2">
+                                  <p class="m-0">${legs[legs.length - 1][0]?.arrTime || "N/A"}</p>
+                                  <p class="fw-bold m-0">${legs[legs.length - 1][0]?.dstApt || "N/A"}</p>
+                                </div>
+                              </div>
+                            </div>
+                          `)
+                          .join("")}
+                      </div>
+                      <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
+                        <div class="price-container">
+                          <div class="total-price text-center">
+                            Total price:
+                            ${flight.price.adt.count} × Adults (${flight.price.adt.price.toFixed(2)} AUD)
+                            ${flight.price.chd.count > 0 ? `+ ${flight.price.chd.count} × Childs (${flight.price.chd.price.toFixed(2)} AUD)` : ''}
+                            ${flight.price.inf.count > 0 ? `+ ${flight.price.inf.count} × Infants (${flight.price.inf.price.toFixed(2)} AUD)` : ''}
+                            = <span>${(
+                              flight.price.adt.price * flight.price.adt.count +
+                              flight.price.chd.price * flight.price.chd.count +
+                              flight.price.inf.price * flight.price.inf.count
+                            ).toFixed(2)}</span> AUD
+                          </div>
+                          <p class="m-0 fw-bold text-center">Price p.p</p>
+                          <div class="price-per-person">
+                            Adults: ${flight.price.adt.price.toFixed(2)} AUD<br>
+                            ${
+                              flight.price.chd.count > 0
+                                ? `Children: ${flight.price.chd.price.toFixed(2)} AUD<br>`
+                                : ""
+                            }
+                            ${
+                              flight.price.inf.count > 0
+                                ? `Infants: ${flight.price.inf.price.toFixed(2)} AUD<br>`
+                                : ""
+                            }
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                        <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">
+                          Select <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        </div>
+                      </div>
                     </div>
-                    <div class="col-md-4 col-sm-4 text-center pr-2">
-                      <p class="m-0">${legs[legs.length - 1][0]?.arrTime || "N/A"}</p>
-                      <p class="fw-bold m-0">${legs[legs.length - 1][0]?.dstApt || "N/A"}</p>
-                    </div>
-                  </div>
-                </div>
-              `
-              )
-              .join("")}
-          </div>
-          <div class="col-md-3 col-sm-3 d-grid justify-content-around align-content-center gap-2">
-            <p class="m-0 fw-bold text-center">Price p.p</p>
-            <p class="m-0 fw-bolder text-center">AUD <span style="font-weight: 700;" class="price">${flight.adtSell}</span></p>
-            <button class="btn book-button px-3" style="background-color: #05203c; color: #fff">
-              Select <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-      `;
+                  `;
+
           flightDiv.innerHTML = flightContent;
           container.appendChild(flightDiv);
         });
@@ -1117,60 +1046,6 @@ session_start();
       // Add event listeners for sliders
       outboundSlider.addEventListener("input", filterFlights);
       durationSlider.addEventListener("input", filterFlights);
-
-
-
-      // Function to handle active button styling
-      function setActiveButton(buttonId) {
-        // Remove active class from all buttons
-        document.querySelectorAll(".priceList").forEach((btn) => btn.classList.remove("active-btn"));
-
-        // Add active class to the clicked button
-        document.getElementById(buttonId).classList.add("active-btn");
-      }
-
-      // Add click event listeners for sorting and styling
-      document.getElementById("cheapest").addEventListener("click", () => {
-        setActiveButton("cheapest");
-        const sortedData = [...flightsData].sort((a, b) => a.adtSell - b.adtSell);
-        renderFlights(sortedData);
-      });
-
-      document.getElementById("average").addEventListener("click", () => {
-        setActiveButton("average");
-        const average = flightsData.reduce((acc, flight) => acc + parseFloat(flight.adtSell), 0) / flightsData.length;
-        const filteredData = flightsData.filter((flight) => flight.adtSell >= average);
-        renderFlights(filteredData);
-      });
-
-      document.getElementById("highest").addEventListener("click", () => {
-        setActiveButton("highest");
-        const sortedData = [...flightsData].sort((a, b) => b.adtSell - a.adtSell);
-        renderFlights(sortedData);
-      });
-      // Fetch all elements with the class "price"
-      const prices = document.querySelectorAll(".price");
-
-      // Extract numeric values from the text content of the elements
-      const priceValues = Array.from(prices).map(priceElement => {
-        const priceText = priceElement.textContent.trim();
-        // Remove non-numeric characters and convert to a number
-        return parseFloat(priceText.replace(/[^0-9.]/g, "")) || 0;
-      });
-
-      if (priceValues.length > 0) {
-        // Calculate the lowest, highest, and average prices
-        const lowestPrice = Math.min(...priceValues);
-        const highestPrice = Math.max(...priceValues);
-        const averagePrice = (priceValues.reduce((a, b) => a + b, 0) / priceValues.length).toFixed(2);
-
-        // Insert values into the respective elements
-        document.getElementById("cheapestPrice").textContent = `AUD ${lowestPrice}`;
-        document.getElementById("averagePrice").textContent = `AUD ${averagePrice}`;
-        document.getElementById("highestPrice").textContent = `AUD ${highestPrice}`;
-      } else {
-        console.error("No prices found.");
-      }
     });
   </script>
 </body>
