@@ -186,9 +186,14 @@ session_start();
 
   isset($_SESSION['formData']);
   if (isset($_POST['trip']) == "roundtrip") {
+    /**
+     * Merge fare IDs from the XML response data.
+     * @param string $responseData The XML response data
+     * @return array An array of fare IDs, merged without overlapping
+     */
     function mergeFareIds($responseData)
     {
-      // Check if the session contains the response data
+      // Ensure the session contains the response data
       if (!$responseData) {
         die("No XML data found in the session.");
       }
@@ -220,6 +225,13 @@ session_start();
 
       return $mergedFareIds;
     }
+
+    /**
+     * Get a tarif element by its fare ID.
+     * @param string $responseData The XML response data
+     * @param string $fareIdToMatch The fare ID to search for
+     * @return array|null The matched tarif array or null if not found
+     */
     function getTarifByFareId($responseData, $fareIdToMatch)
     {
       // Load XML from string
@@ -241,9 +253,17 @@ session_start();
       // Return the matched tarif array or null if not found
       return $matchedTarif;
     }
+
+    /**
+     * Separate flights into primary and secondary arrays.
+     * @param array $tarif The tarif element
+     * @param array &$fareIdsPrimary Reference to the primary fare IDs array
+     * @param array &$fareIdsSecondary Reference to the secondary fare IDs array
+     * @param string $tarifIdsingle The single fare ID to match
+     */
     function getSeperatedFlights($tarif, &$fareIdsPrimary, &$fareIdsSecondary, $tarifIdsingle)
     {
-      
+      // Check if the tarif element is present
       if ($tarif) {
         $fareId = $tarif['@attributes']['tarifId'] ?? 'N/A';
         $adtSell = $tarif['@attributes']['adtSell'] ?? 'N/A';
@@ -303,11 +323,20 @@ session_start();
               $fareIdsSecondary[$subFareId] = $flightsData;
             }
           }
+        } else {
+          echo "<h2>No data found for this fare ID.</h2>";
         }
       } else {
         echo "<h2>No data found for this fare ID.</h2>";
       }
     }
+
+    /**
+     * Search for a leg by its ID in the XML file.
+     * @param string $filePath The path to the XML file
+     * @param string $searchLegId The leg ID to search for
+     * @return array|string The matching leg data or an error message
+     */
     function searchLegById($filePath, $searchLegId)
     {
       // Load the XML file
@@ -341,9 +370,87 @@ session_start();
         return "No matching legs found for legId: $searchLegId.";
       }
     }
+
+    /**
+     * Return the first fare ID from a merged fare ID string.
+     * @param string $fareId The merged fare ID string
+     * @return string The first fare ID
+     */
     function getFirstFareId($fareId)
     {
       return explode("_", $fareId)[0];
+    }
+    /**
+     * Return the first fare ID from a merged fare ID string.
+     * @param string $fareId The merged fare ID string
+     * @return string The first fare ID
+     */
+    function getSecondFareId($fareId)
+    {
+      return explode("_", $fareId)[1];
+    }
+    //  To generate fares ID for external delivery loads and to retrieve fare details.
+    //  This function takes in a string of XML data as its argument, parses it,
+    //  and returns an array with two elements: the first is an array of fare
+    //  objects, the second is an array of fare IDs.
+    function getFares($responseData, $searchFareId)
+    {
+      libxml_use_internal_errors(true);
+      $xml = simplexml_load_string($responseData);
+      if ($xml === false) {
+        echo "Failed to parse XML. Errors:\n";
+        foreach (libxml_get_errors() as $error) {
+          echo $error->message, "\n";
+        }
+        libxml_clear_errors();
+        exit;
+      }
+
+      // Register namespaces for elements with prefixes
+      $xml->registerXPathNamespace('shared', 'http://ypsilon.net/shared');
+
+      $fares = [];
+      foreach ($xml->fares->fare as $fare) {
+        $namespaces = $fare->getNamespaces(true);
+        $shared = $fare->children('shared', true);
+        $fareBases = [];
+        if (isset($fare->fareBases->fareBase)) {
+          foreach ($fare->fareBases->fareBase as $base) {
+            $namespaces = $base->getNamespaces(true); // Get namespaces for the base element
+            $fareBases[] = [
+              'shared:pax' => isset($namespaces['shared']) ? (string)$base->attributes($namespaces['shared'])->pax : null,
+              'value' => (string)$base, // Extract the fareBase value
+            ];
+          }
+        }
+        // Extract fare attributes and nested fareBases
+        $fareData = [
+            'fareId' => (string)$fare['fareId'],
+            'class' => (string)$fare['class'],
+            'paxType' => (string)$fare['paxType'],
+            'depApt' => (string)$fare['depApt'],
+            'dstApt' => (string)$fare['dstApt'],
+            'cos' => (string)$fare['cos'],
+            'yyFare' => (string)$fare['yyFare'],
+            'date' => (string)$fare['date'],
+            'dfcConso' => (string)$fare['dfcConso'],
+            'dfcAgent' => (string)$fare['dfcAgent'],
+            'ticketTimelimit' => (string)$fare['ticketTimelimit'],
+            'shared:fareType' => isset($shared->fareType) ? (string)$shared->fareType : null,
+            'shared:vcr' => isset($fare->attributes($namespaces['shared'])['vcr']) ? (string)$fare->attributes($namespaces['shared'])['vcr'] : null,
+            'fareBases' => $fareBases,
+          ];
+
+        $fares[] = $fareData;
+      }
+
+      // Search for the specific fareId
+      foreach ($fares as $fare) {
+        if ($fare['fareId'] === $searchFareId) {
+          return $fare; // Return the matched fare
+        }
+      }
+      return null; // Return null if no match is found
     }
     $curl = curl_init();
 
@@ -485,7 +592,10 @@ session_start();
       </div>
     </div>
   <?php elseif (isset($responseData)):
-    var_dump($responseData); ?>
+    var_dump($responseData);
+    // var_dump($fares);
+    // var_dump($fareIds);
+  ?>
 
     <div class="container-md">
       <div class="row">
@@ -615,33 +725,16 @@ session_start();
           </div>
         </div>
         <div class="col-md-6 my-2">
-          <!-- price list -->
-          <div class="row border rounded mb-2" style="background: #fff">
-            <div class="priceList col-md-4 col-sm-4 border-end p-2">
-              <p class="m-0">Best</p>
-              <p class="m-0 fw-bold price">
-                ₹9,033 <i class="fa-solid fa-circle-info"></i>
-              </p>
-              <p class="m-0">2h 15(average)</p>
-            </div>
-            <div class="priceList col-md-4 col-sm-4 border-end p-2">
-              <p class="m-0">Cheapest</p>
-              <p class="m-0 fw-bold price">₹8,865</p>
-              <p class="m-0">2h 10(average)</p>
-            </div>
-            <div class="priceList col-md-4 col-sm-4 p-2">
-              <p class="m-0">Fastest</p>
-              <p class="m-0 fw-bold price">₹15,046</p>
-              <p class="m-0">2h 03(average)</p>
-            </div>
-          </div>
           <?php $index = 1;
           foreach ($fares as $id):
             $tarif = getTarifByFareId($responseData, $id);
             $fareIdsPrimary = [];
             $fareIdsSecondary = [];
-            $tarifIdsingle = getFirstFareId($id);
-            getSeperatedFlights($tarif, $fareIdsPrimary, $fareIdsSecondary, $tarifIdsingle);
+            $tarifIdsingleFirst = getFirstFareId($id);
+            $tarifIdsingleSecond = getSecondFareId($id);
+            $fareOne = getFares($responseData, $tarifIdsingleFirst);
+            $fareTwo = getFares($responseData, $tarifIdsingleSecond);
+            getSeperatedFlights($tarif, $fareIdsPrimary, $fareIdsSecondary, $tarifIdsingleFirst);
           ?>
             <!-- flight div -->
             <div class="flight-div mb-2 border rounded">
@@ -664,8 +757,8 @@ session_start();
                 ">
                 <div
                   class="col-md-2 col-sm-2 gap-3" style="display: grid;">
-                  <img src="newUi/images/Alsaka air.png" alt="" />
-                  <img src="newUi/images/indigo.png" alt="" />
+                  <img src="https://gauratravel.com.au/wp-content/uploads/2025/01/<?php echo $fareOne['shared:vcr']; ?>.gif" alt="" />
+                  <?php echo $fareOne['shared:vcr']; ?>
                 </div>
                 <div class="col-md-7 col-sm-7 border-end">
                   <div>
@@ -676,7 +769,7 @@ session_start();
                       foreach ($flights as $flight):
 
                         $legs = [];
-                        
+
                         if (isset($flight['legs']) && is_array($flight['legs'])) {
                           foreach ($flight['legs'] as $leg) {
                             $legData = searchLegById($responseData, $leg['legId']); // Fetch leg data
@@ -802,7 +895,7 @@ session_start();
                           <p class="text-center m-0">No flights found</p>
                     <?php }
                       endforeach;
-                       // Stop iteration after 5 flights
+                    // Stop iteration after 5 flights
                     endforeach;
                     ?>
                   </div>
@@ -828,8 +921,14 @@ session_start();
                   <div class="price-container">
                     <div class="total-price text-center">
                       Total price:
-                      <?php echo $adultsCount; ?> × Adults <?php if ($childrenCount > 0 || $infantsCount > 0) { echo ' + '; } ?>
-                      <?php if ($childrenCount > 0) { ?> <?php echo $childrenCount; ?> × Childs <?php if ($infantsCount > 0) { echo ' + '; }else{ echo '='; } ?> <?php } ?>
+                      <?php echo $adultsCount; ?> × Adults <?php if ($childrenCount > 0 || $infantsCount > 0) {
+                                                              echo ' + ';
+                                                            } ?>
+                      <?php if ($childrenCount > 0) { ?> <?php echo $childrenCount; ?> × Childs <?php if ($infantsCount > 0) {
+                                                                                                  echo ' + ';
+                                                                                                } else {
+                                                                                                  echo '=';
+                                                                                                } ?> <?php } ?>
                       <?php if ($infantsCount > 0) { ?> <?php echo $infantsCount; ?> × Infants = <?php } ?>
                       <span><?php echo number_format($finalPrice, 2); ?></span> AUD
                     </div>
@@ -855,6 +954,7 @@ session_start();
     </div>
   <?php endif; ?>
   <script>
+    // remove this from live
     $(document).ready(function() {
       // Select all buttons with a data-btn attribute
       const buttons = $("[data-btn]");
@@ -1103,40 +1203,13 @@ session_start();
         $('#returnDate').prop('disabled', false);
       }
     });
-    $(document).ready(function() {
-      $(document).on('click', '.price-breakdown', function() {
-        var index = $(this).data('index');
-        var content = $('#price-breakdown-' + index);
-        if (content.css('display') === 'none' || content.css('display') === '') {
-          content.css('display', 'block');
-          $(this).text('- HIDE PRICE BREAKDOWN');
-        } else {
-          content.css('display', 'none');
-          $(this).text('+ DISPLAY PRICE BREAKDOWN');
-        }
-      });
-    });
     document.addEventListener('DOMContentLoaded', function() {
-      var studentFaresRadio = document.getElementById('studentFares');
-      var previouslySelected = null;
-
-      studentFaresRadio.addEventListener('click', function(event) {
-        if (previouslySelected === this) {
-          this.checked = false;
-          previouslySelected = null;
-        } else {
-          previouslySelected = this;
-        }
-      });
       const outboundSlider = document.getElementById("outboundSlider");
       const returnSlider = document.getElementById("returnSlider");
       const durationSlider = document.getElementById("durationSlider");
       const outboundTime = document.getElementById("outboundTime");
       const returnTime = document.getElementById("returnTime");
       const durationTime = document.getElementById("durationTime");
-      const selectAll = document.getElementById("selectAll");
-      const clearAll = document.getElementById("clearAll");
-      const checkboxes = document.querySelectorAll(".form-check-input");
 
       function formatTime(value) {
         const hours = Math.floor(value / 60);
@@ -1158,14 +1231,6 @@ session_start();
 
       durationSlider.addEventListener("input", () => {
         durationTime.textContent = `${durationSlider.value} hours - 5.5 hours`;
-      });
-
-      selectAll.addEventListener("click", () => {
-        checkboxes.forEach((checkbox) => (checkbox.checked = true));
-      });
-
-      clearAll.addEventListener("click", () => {
-        checkboxes.forEach((checkbox) => (checkbox.checked = false));
       });
     });
   </script>
